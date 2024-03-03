@@ -12,15 +12,38 @@ import java.util.Date;
 
 public class TimeUtils {
 
-	public static final ZoneId DEFAULT_TIME_ZONE = ZoneId.of(System.getenv().getOrDefault("TZ", "Europe/Rome"));
-	private static ThreadLocal<SimpleDateFormat> defaultDateFmtForFilePrefix = ThreadLocal.withInitial(() -> new SimpleDateFormat("[yyyy][MM][dd]"));
-	public static DateTimeFormatter dateTimeFormatForBackup = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
-	private static ThreadLocal<SimpleDateFormat> defaultDateFormat = ThreadLocal.withInitial(() -> new SimpleDateFormat("dd/MM/yyyy"));
-	private static ThreadLocal<SimpleDateFormat> alternativeDateFormat = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
-	public static DateTimeFormatter defaultLocalDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-	public static DateTimeFormatter defaultLocalDateWithDayNameFormat = DateTimeFormatter.ofPattern("EEEE " + getDefaultDateFormat().toPattern());
-	public static Comparator<Date> reversedDateComparator = Collections.reverseOrder((dateOne, dateTwo) -> dateOne.compareTo(dateTwo));
-	public static Comparator<LocalDate> reversedLocalDateComparator = Collections.reverseOrder((dateOne, dateTwo) -> dateOne.compareTo(dateTwo));
+	public static final ZoneId DEFAULT_TIME_ZONE ;
+	private static ThreadLocal<SimpleDateFormat> defaultDateFmtForFilePrefix;
+	public static DateTimeFormatter dateTimeFormatForBackup;
+	private static ThreadLocal<SimpleDateFormat> defaultDateFormat;
+	private static ThreadLocal<SimpleDateFormat> alternativeDateFormat;
+	public static DateTimeFormatter defaultLocalDateFormat;
+	public static DateTimeFormatter defaultLocalDateWithDayNameFormat;
+	public static Comparator<Date> reversedDateComparator;
+	public static Comparator<LocalDate> reversedLocalDateComparator;
+
+	static {
+		DEFAULT_TIME_ZONE = ZoneId.of(System.getenv().getOrDefault("TZ", "Europe/Rome"));
+		new Thread(() -> {
+			boolean logged = false;
+			while (!logged) {
+				try {
+					LogUtils.INSTANCE.info("Set default time zone to " + DEFAULT_TIME_ZONE);
+					logged = true;
+				} catch (Throwable exc) {
+
+				}
+			}
+		}).start();
+		defaultDateFmtForFilePrefix = ThreadLocal.withInitial(() -> new SimpleDateFormat("[yyyy][MM][dd]"));
+		dateTimeFormatForBackup = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+		defaultDateFormat = ThreadLocal.withInitial(() -> new SimpleDateFormat("dd/MM/yyyy"));
+		alternativeDateFormat = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
+		defaultLocalDateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		defaultLocalDateWithDayNameFormat = DateTimeFormatter.ofPattern("EEEE " + getDefaultDateFormat().toPattern());
+		reversedDateComparator = Collections.reverseOrder((dateOne, dateTwo) -> dateOne.compareTo(dateTwo));
+		reversedLocalDateComparator = Collections.reverseOrder((dateOne, dateTwo) -> dateOne.compareTo(dateTwo));
+	}
 
 	public static Date toDate(LocalDate date) {
 		return Date.from(date.atStartOfDay(DEFAULT_TIME_ZONE).toInstant());

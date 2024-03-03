@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -41,7 +40,9 @@ import org.rg.game.lottery.engine.PersistentStorage;
 
 public interface LogUtils {
 	public static final LogUtils INSTANCE = retrieveConfiguredLogger();
-	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("[dd/MM/yyyy-HH:mm:ss.SSS]").withLocale(Locale.ITALY);
+	public static final DateTimeFormatter dateTimeFormatter =
+		DateTimeFormatter.ofPattern("[dd/MM/yyyy-HH:mm:ss.SSS]")
+		.withZone(TimeUtils.DEFAULT_TIME_ZONE);
 
 	static LogUtils retrieveConfiguredLogger() {
 		String loggerType = System.getenv().getOrDefault("logger.type", "console");
