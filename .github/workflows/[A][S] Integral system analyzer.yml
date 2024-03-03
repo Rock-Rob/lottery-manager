@@ -37,7 +37,7 @@ jobs:
           INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL: ${{ secrets.INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL }}
           RESOURCES_INTEGRAL_SYSTEM_ANALYSIS_FOLDER: 'integralSystemsAnalysis'
           TASKS_MAX_PARALLEL: 5
-          TIMEOUT: 7200
+          TIMEOUT: ${{ env.INTEGRAL_SYSTEM_ANALYSIS_JOB_TIMEOUT }}
           #value 0: reset
           #value 1: index
           INDEX_MODE: '1'
@@ -75,5 +75,5 @@ jobs:
           INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL: ${{ secrets.INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL }}
           RESOURCES_INTEGRAL_SYSTEM_ANALYSIS_FOLDER: 'integralSystemsAnalysis'
           TASKS_MAX_PARALLEL: 5
-          TIMEOUT: 7200
+          TIMEOUT: ${{ env.INTEGRAL_SYSTEM_ANALYSIS_JOB_TIMEOUT }}
         run: mvn -B compile exec:java -P integral-system-analysis --file pom.xml
