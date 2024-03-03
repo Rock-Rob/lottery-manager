@@ -214,7 +214,7 @@ public interface LogUtils {
 					return;
 				}
 				for (String report : reports) {
-					writer.append(decorate(report + "\n"));
+					writer.append(decorate(report) + "\n");
 				}
 				writer.flush();
 			} catch (Throwable exc) {
@@ -284,7 +284,7 @@ public interface LogUtils {
 				return;
 			}
 			for (String report : reports) {
-				logger.accept(decorate(report + "\n"));
+				logger.accept(decorate(report) + "\n");
 			}
 		}
 
