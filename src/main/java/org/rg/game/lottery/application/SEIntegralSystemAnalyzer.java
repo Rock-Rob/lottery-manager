@@ -110,7 +110,8 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			"resources.integral-system-analysis.folder",
 			"RESOURCES_INTEGRAL_SYSTEM_ANALYSIS_FOLDER"
 		);
-		LogUtils.INSTANCE.info("Set configuration files folder to " + String.join(", ", configurationFileFolders) + "\n");
+		LogUtils.INSTANCE.info("Set configuration files folder to " + String.join(", ", configurationFileFolders));
+		LogUtils.INSTANCE.info();
 		List<File> configurationFiles =
 			ResourceUtils.INSTANCE.find(
 				"se-integral-systems-analysis", "properties",

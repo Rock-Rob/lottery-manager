@@ -10,8 +10,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.channels.FileChannel;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -37,7 +40,8 @@ import org.burningwave.Throwables;
 import org.rg.game.lottery.engine.PersistentStorage;
 
 public interface LogUtils {
-	public final static LogUtils INSTANCE = retrieveConfiguredLogger();
+	public static final LogUtils INSTANCE = retrieveConfiguredLogger();
+	public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("[dd/MM/yyyy-HH:mm:ss.SSS]").withLocale(Locale.ITALY);
 
 	static LogUtils retrieveConfiguredLogger() {
 		String loggerType = System.getenv().getOrDefault("logger.type", "console");
@@ -51,6 +55,19 @@ public interface LogUtils {
 			);
 		}
 		throw new IllegalArgumentException(loggerType + " is not a valid logger type");
+	}
+
+	public default String decorate(String line) {
+		String prefix = dateTimeFormatter.format(LocalDateTime.now()) + " - " + Thread.currentThread() + ": ";
+		if (!line.contains("\n")) {
+			return prefix + line;
+		} else {
+			char[] charArray = new char[prefix.length()];
+			for (int i = 0; i < charArray.length; i++) {
+			    charArray[i] = ' ';
+			}
+			return prefix + line.replace("\n", "\n" + new String(charArray));
+		}
 	}
 
 
@@ -92,14 +109,14 @@ public interface LogUtils {
 				System.err.println();
 			} else {
 				for (String report : reports) {
-					System.err.println(report);
+					System.err.println(decorate(report));
 				}
 			}
 			if (exc.getMessage() != null) {
-				System.err.println(exc.getMessage());
+				System.err.println(decorate(exc.getMessage()));
 			}
 			for (StackTraceElement stackTraceElement : exc.getStackTrace()) {
-				System.err.println("\t" + stackTraceElement.toString());
+				System.err.println(decorate("\t" + stackTraceElement.toString()));
 			}
 		}
 
@@ -109,7 +126,7 @@ public interface LogUtils {
 				return;
 			}
 			for (String report : reports) {
-				stream.println(report);
+				stream.println(decorate(report));
 			}
 		}
 	}
@@ -176,14 +193,14 @@ public interface LogUtils {
 					writer.append("\n");
 				} else {
 					for (String report : reports) {
-						writer.append(report + "\n");
+						writer.append(decorate(report + "\n"));
 					}
 				}
 				if (exc.getMessage() != null) {
-					writer.append(exc.getMessage() + "\n");
+					writer.append(decorate(exc.getMessage() + "\n"));
 				}
 				for (StackTraceElement stackTraceElement : exc.getStackTrace()) {
-					writer.append("\t" + stackTraceElement.toString());
+					writer.append(decorate("\t" + stackTraceElement.toString()));
 				}
 			} catch (Throwable innerExc) {
 				Throwables.INSTANCE.throwException(exc);
@@ -197,7 +214,7 @@ public interface LogUtils {
 					return;
 				}
 				for (String report : reports) {
-					writer.append(report + "\n");
+					writer.append(decorate(report + "\n"));
 				}
 				writer.flush();
 			} catch (Throwable exc) {
@@ -250,14 +267,14 @@ public interface LogUtils {
 				errorLogger.accept("\n");
 			} else {
 				for (String report : reports) {
-					errorLogger.accept(report + "\n");
+					errorLogger.accept(decorate(report + "\n"));
 				}
 			}
 			if (exc.getMessage() != null) {
-				errorLogger.accept(exc.getMessage() + "\n");
+				errorLogger.accept(decorate(exc.getMessage() + "\n"));
 			}
 			for (StackTraceElement stackTraceElement : exc.getStackTrace()) {
-				errorLogger.accept("\t" + stackTraceElement.toString() + "\n");
+				errorLogger.accept(decorate("\t" + stackTraceElement.toString() + "\n"));
 			}
 		}
 
@@ -267,7 +284,7 @@ public interface LogUtils {
 				return;
 			}
 			for (String report : reports) {
-				logger.accept(report + "\n");
+				logger.accept(decorate(report + "\n"));
 			}
 		}
 

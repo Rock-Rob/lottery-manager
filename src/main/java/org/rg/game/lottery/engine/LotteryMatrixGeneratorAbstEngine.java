@@ -214,7 +214,8 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 				if (storageProcessor != null) {
 					storageProcessor.apply(extractionDate).accept(storages);
 				}
-				LogUtils.INSTANCE.info("\n\n");
+				LogUtils.INSTANCE.info();
+				LogUtils.INSTANCE.info();
 			}
 			return storages;
 		};
@@ -545,7 +546,8 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 					}
 				}
 			} catch (AllRandomNumbersHaveBeenGeneratedException exc) {
-				LogUtils.INSTANCE.info("\n" + exc.getMessage());
+				LogUtils.INSTANCE.info();
+				LogUtils.INSTANCE.info(exc.getMessage());
 			}
 			Integer minOccurrences = storage.getMinOccurence();
 			Integer maxOccurrences = storage.getMaxOccurence();
