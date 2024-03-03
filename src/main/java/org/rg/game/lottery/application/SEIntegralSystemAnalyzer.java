@@ -625,14 +625,17 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			Map.Entry<List<Integer>, Map<Number, Integer>> combo = new ArrayList<>(cacheRecord.data).get(Long.valueOf(nextLong).intValue());
 			ComboHandler cH = new ComboHandler(combo.getKey(), 6);
 			cH.iterate(premiumFilter);
-			LogUtils.INSTANCE.info(
-				"\nLa combinazione scelta per il concorso " + seedData.getValue() + " del " +
+			StringBuffer log = new StringBuffer();
+			log.append(
+				"La combinazione scelta per il concorso " + seedData.getValue() + " del " +
 				TimeUtils.defaultLocalDateFormat.format(nextExtractionDate) + " è:\n\t" + ComboHandler.toString(combo.getKey(), ", ") +
 				"\nposizionata al " + nextLong + "° posto. Il relativo sistema integrale è composto da " + selectedCombosData.size() + " combinazioni:"
 			);
 			for (String cmbData : selectedCombosData) {
-				LogUtils.INSTANCE.info("\t" + cmbData);
+				log.append("\t" + cmbData + "\n");
 			}
+			LogUtils.INSTANCE.info();
+			LogUtils.INSTANCE.info(log.toString());
 		}
 		if (config.get("choice-of-systems.numbers") != null) {
 			List<Integer> numbersToBePlayed =
@@ -671,11 +674,12 @@ public class SEIntegralSystemAnalyzer extends Shared {
 					}
 					selectedIntegralSystems.add(selectedIntegralSystemsRow);
 				}
-				LogUtils.INSTANCE.info(
-					"\nLe combinazioni scelte, sulla base dei numeri scelti (" +
+				StringBuffer log = new StringBuffer();
+				log.append(
+					"Le combinazioni scelte, sulla base dei numeri scelti (" +
 					ComboHandler.toString(numbersToBePlayed, ", ") +
 					") per il concorso " + seedData.getValue() + " del " +
-					TimeUtils.defaultLocalDateFormat.format(nextExtractionDate) + " sono:"
+					TimeUtils.defaultLocalDateFormat.format(nextExtractionDate) + " sono:\n"
 				);
 				Set<Integer> selectedIntegralSystemsIndexesFlat = new LinkedHashSet<>();
 				List<List<Integer>> selectedIntegralSystemsFlat = new ArrayList<>();
@@ -684,9 +688,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 						if (selectedIntegralSystemsIndexesFlat.add(systemRankPosition)) {
 							List<Integer> selectedIntegralSystem = cacheRecord.data.get(systemRankPosition).getKey();
 							selectedIntegralSystemsFlat.add(selectedIntegralSystem);
-							LogUtils.INSTANCE.info(
+							log.append(
 								"\t" + ComboHandler.toString(selectedIntegralSystem, ", ") +
-								"\t posizionata al " + (systemRankPosition + 1) + "° posto."
+								"\t posizionata al " + (systemRankPosition + 1) + "° posto.\n"
 							);
 						}
 					}
@@ -694,10 +698,11 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				for (List<Integer> selectedIntegralSystem : selectedIntegralSystemsFlat) {
 					new ComboHandler(selectedIntegralSystem, 6).iterate(premiumFilter);
 				}
-				LogUtils.INSTANCE.info("Il relativo sistema integrale è composto da " + selectedCombosData.size() + " combinazioni:");
+				log.append("Il relativo sistema integrale è composto da " + selectedCombosData.size() + " combinazioni:\n");
 				for (String cmbData : selectedCombosData) {
-					LogUtils.INSTANCE.info("\t" + cmbData);
+					log.append("\t" + cmbData + "\n");
 				}
+				LogUtils.INSTANCE.info(log.toString());
 			}
 		}
 	}
