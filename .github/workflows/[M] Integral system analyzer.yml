@@ -1,4 +1,4 @@
-name: Integral system analyzer
+name: Integral system analyzer (manually launched)
 
 on:
   watch:
