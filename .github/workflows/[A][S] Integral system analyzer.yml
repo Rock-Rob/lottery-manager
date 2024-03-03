@@ -2,8 +2,7 @@ name: Integral system analyzer
 
 on:
   schedule:
-#    - cron: "0 2,10,18 * * *"
-    - cron: "0 2 * * *"
+    - cron: "0 2,10,18 * * *"
 
 jobs:
    
