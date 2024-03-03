@@ -18,7 +18,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
    
   launch-integral-system-indexer:
-    name: Indexing on (JVM ${{ matrix.java }}, ${{ matrix.os }})
+    name: Launch indexer on (JVM ${{ matrix.java }}, ${{ matrix.os }})
     strategy:
       fail-fast: false
 #      max-parallel: 15
@@ -55,7 +55,7 @@ jobs:
         run: mvn -B compile exec:java -P integral-system-analysis --file pom.xml
        
   launch-integral-system-analyzer:
-    name: Analyzing on (JVM ${{ matrix.java }}, ${{ matrix.os }})
+    name: Launch analyzer on (JVM ${{ matrix.java }}, ${{ matrix.os }})
     needs: [launch-integral-system-indexer]
     strategy:
       fail-fast: false
