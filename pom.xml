@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>org.rr.game</groupId>
+	<artifactId>lottery-handler</artifactId>
+
+	<name>Lottery Handler</name>
+	<description>Lottery handler</description>
+	<version>1.0.0</version>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>9</maven.compiler.source>
+		<maven.compiler.target>9</maven.compiler.target>
+		<jackson.version>2.16.1</jackson.version>
+		<copyright.holder>Roberto Gentili</copyright.holder>
+	</properties>
+	
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+        </plugins>
+    </build>
+	
+	<dependencies>
+		
+		<dependency>
+			<groupId>org.burningwave</groupId>
+			<artifactId>json</artifactId>
+			<version>0.13.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.3</version>
+		</dependency>
+		
+		<dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+		
+		<dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        
+        <dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.15.4</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.logging.log4j</groupId>
+		    <artifactId>log4j-core</artifactId>
+		    <version>2.20.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.formdev</groupId>
+		    <artifactId>flatlaf</artifactId>
+		    <version>3.1.1</version>
+	    </dependency>
+		<dependency>
+		    <groupId>com.google.firebase</groupId>
+		    <artifactId>firebase-admin</artifactId>
+		    <version>9.2.0</version>
+		</dependency>
+	    <dependency>
+	        <groupId>com.google.cloud</groupId>
+	        <artifactId>google-cloud-core</artifactId>
+	        <version>2.6.1</version>
+	    </dependency>
+	
+	    <dependency>
+	        <groupId>com.google.cloud</groupId>
+	        <artifactId>google-cloud-firestore</artifactId>
+	        <version>3.0.21</version>
+	    </dependency>
+	    <dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		    <version>1.7.36</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-simple</artifactId>
+		    <version>1.7.36</version>
+		</dependency>
+		
+	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>integral-system-analysis</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+			    <plugins>
+			        <plugin>
+			            <groupId>org.codehaus.mojo</groupId>
+			            <artifactId>exec-maven-plugin</artifactId>
+			            <version>3.1.0</version>
+			            <configuration>
+			                <mainClass>org.rg.game.lottery.application.SEIntegralSystemAnalyzer</mainClass>
+			            </configuration>
+			        </plugin>
+			    </plugins>
+			</build>
+		</profile>		
+	</profiles>
+	
+</project>

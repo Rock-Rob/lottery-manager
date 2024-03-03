@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+    <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/lottery-util/src/main/java/org/rg/game/lottery/application/SEIntegralSystemAnalyzer.java"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+        <mapEntry key="integral-system-analysis.firebase.credentials" value="{&#13;&#10;  &quot;type&quot;: &quot;service_account&quot;,&#13;&#10;  &quot;project_id&quot;: &quot;lottery-util-dd398&quot;,&#13;&#10;  &quot;private_key_id&quot;: &quot;9f02863f3aa6db61e2141e053d87605142826f8e&quot;,&#13;&#10;  &quot;private_key&quot;: &quot;-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDJYOMgfaIvJ0wk\nj4yAm0oWSSpom0sSP82ZGvz8cmnFyNvPCw3nje3lD1c+5qo+tPKkRZE/VY3k/iB+\n0SRa2hVdEBFmAJfJFwD4J+zecja2yfFHOUjykf+kD3LCAAD+jFmXS9vmbb5wcBoF\nNlY9CajJRWzMTZntlPTi1Cp0DQgrbb0hIDrRP3CM4AFdJRZq9G7Hg8kSdT+ZJZY1\nIv6S6OScV1yCmKaQzPHxm5/xOLTsba4WqnucMHIBUPJFmt6A9XI5d0RWtpIO32lg\nsjghSHpUQGV4RbEhtQ89GQ2qOpo432qaz2cJYw3c8TQR8UwR+Vlpl8N9pu1EQp7y\n9MeAq9jzAgMBAAECggEAF5dLlEtTfB2o7GGKrqhCgiDZIH8MyNsDnWuNdo96t6pj\nobokS1uTonFtIZfJGuZ8xGTH8rj1kf15VhHvJduFhCz1NNNd9LdGrEuVEqwjn79B\njjv2QUB8R75tja+NbkSH3FMNNE3n8OkZC0JF0Qm4JbgF2ls+7Je2Jnp/bK/4JIoV\nn3O0DpvGe2W9yFuym2JLsYVlgU9FpnekfZbed6B8EoSMyjZ+XV/qUJA/iVzLxwNo\nnwU6ObSSXHxG8hjL3zwsAttc6TSHKLL+hdVvgMRVcrbU/AiTOyfkfEaaHIUjCGFa\na6Y/0hr8rVKMEbRx98tKQmpp3JOs0thcBfZiNl0F8QKBgQD5P435lm5B97qqkDmS\n3H4g107tMrM4dE6vetuO2Pk9q2bO8dY9RqMMkxGpRf6ikJX2VGbXqZ8vJk2lenJ3\nM4y1Pnl2JxVMmzl8fpUviUyrg+f46jZ35XV+dq4a/zdSh7BrwHSEixKHz8DT4JKw\n8Y9VhSerP48ntcfPfldeVpyK0QKBgQDO1V+FdU70BkIxRK0gyc0llM6bqbbkbLP9\nxwVuAlx/YNJu1H0aUYG33zID0cc/ECDjG9CpVbkfNWvJSc7COx5ORtqI9hR2nDTM\nOnXRYrjDIAdXTW+6wM3S5BdXVH434uuUiPCEjQ8gUyM5nzRvvOPJUQAy85nItPgw\nXBOgdRfQgwKBgAs5IGR3sJlJ1V7uxZjmUsuZxlUJ7mYBXrWqG47QGFD9kdCJtTLn\nJlpfmPD9VNzvE8GWxVa6rY9K8z4bSGIzsQdMO93lHqFnb+w6Ku+MCCbE9sIPkcpO\nS78ZCvfuPAh8UaZYcSayuG/jG/SubQyIpAKez013vDN2jPu73aVC0yOxAoGBAMxW\nTLpivI+kpzxZZtkfxUa9jqiGsKNXKTMsrhaSyqMlGoBX+QhJQehP3u+bDkclPfhh\nAHJquCs28be47UVCdpxKr5fj1S+g/yBNGRy1dWeAewArBpjv5efVY6HpXZEE5Eyo\nRUYOvcTnncNNn9ZMPJYlKhcsRt/cud28+b7qL47VAoGAbGfX/b89RCNTMZWlA4A+\nr4WOmgV4niGeB9DuIJOAaMdpWULXWMKTPZlyxNKddPtG4f0rMQ2PyUTyJVMNP+ru\nwY6P82916PIkJCsJv8nlEyw80odCCFwqjTFv/GsnpZai2rKRHs/KWAYuXeV1Azmj\nxpyqy2KWEY2Y76bcHCNXDKM=\n-----END PRIVATE KEY-----\n&quot;,&#13;&#10;  &quot;client_email&quot;: &quot;firebase-adminsdk-z09lu@lottery-util-dd398.iam.gserviceaccount.com&quot;,&#13;&#10;  &quot;client_id&quot;: &quot;109600796661473437981&quot;,&#13;&#10;  &quot;auth_uri&quot;: &quot;https://accounts.google.com/o/oauth2/auth&quot;,&#13;&#10;  &quot;token_uri&quot;: &quot;https://oauth2.googleapis.com/token&quot;,&#13;&#10;  &quot;auth_provider_x509_cert_url&quot;: &quot;https://www.googleapis.com/oauth2/v1/certs&quot;,&#13;&#10;  &quot;client_x509_cert_url&quot;: &quot;https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-z09lu%40lottery-util-dd398.iam.gserviceaccount.com&quot;,&#13;&#10;  &quot;universe_domain&quot;: &quot;googleapis.com&quot;&#13;&#10;}&#13;&#10;"/>
+        <mapEntry key="integral-system-analysis.firebase.url" value="https://lottery-util-dd398-default-rtdb.europe-west1.firebasedatabase.app"/>
+        <mapEntry key="lottery-util.working-path" value="N:\Il mio Drive\Superenalotto"/>
+        <mapEntry key="resources.integral-system-analysis.folder" value="integralSystemsAnalysis"/>
+    </mapAttribute>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+    <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+    <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/21/"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.rg.game.lottery.application.SEIntegralSystemAnalyzer"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="org.rg.game.lottery"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="lottery-util"/>
+    <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+</launchConfiguration>

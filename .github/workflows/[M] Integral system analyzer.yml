@@ -1,0 +1,90 @@
+name: Integral system analyzer
+
+on:
+  watch:
+    types: [started]
+
+jobs:
+            
+  ask-for-authorization:
+    name: Ask for authorization
+    runs-on: ubuntu-latest
+    steps:
+    - uses: octokit/request-action@v2.0.0
+      with:
+        route: GET /repos/:repository/collaborators/${{ github.actor }}
+        repository: ${{ github.repository }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   
+  launch-integral-system-indexer:
+    name: Indexing on (JVM ${{ matrix.java }}, ${{ matrix.os }})
+    strategy:
+      fail-fast: false
+#      max-parallel: 15
+      matrix:
+        os: [ubuntu-latest]
+        java: [21]
+        architecture: [x64]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'zulu'
+          architecture: ${{ matrix.architecture }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Build and launch
+        env:
+          INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_CREDENTIALS: ${{ secrets.INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_CREDENTIALS }}
+          INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL: ${{ secrets.INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL }}
+          RESOURCES_INTEGRAL_SYSTEM_ANALYSIS_FOLDER: 'integralSystemsAnalysis'
+          TASKS_MAX_PARALLEL: 5
+          TIMEOUT: 21300
+          #value 0: reset
+          #value 1: index
+          INDEX_MODE: '1'
+        run: mvn -B compile exec:java -P integral-system-analysis --file pom.xml
+       
+  launch-integral-system-analyzer:
+    name: Analyzing on (JVM ${{ matrix.java }}, ${{ matrix.os }})
+    needs: [launch-integral-system-indexer]
+    strategy:
+      fail-fast: false
+#      max-parallel: 15
+      matrix:
+        os: [ubuntu-latest]
+        java: [11,11,11,11,11,11,17,17,17,17,17,17,17,21,21,21,21,21,21,21]
+        architecture: [x64]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'zulu'
+          architecture: ${{ matrix.architecture }}
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Build and launch
+        env:
+          INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_CREDENTIALS: ${{ secrets.INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_CREDENTIALS }}
+          INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL: ${{ secrets.INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL }}
+          RESOURCES_INTEGRAL_SYSTEM_ANALYSIS_FOLDER: 'integralSystemsAnalysis'
+          TASKS_MAX_PARALLEL: 5
+          TIMEOUT: 21300
+        run: mvn -B compile exec:java -P integral-system-analysis --file pom.xml

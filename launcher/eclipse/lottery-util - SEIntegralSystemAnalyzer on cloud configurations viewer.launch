@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+    <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/lottery-util/src/main/java/org/rg/game/lottery/application/SEIntegralSystemAnalyzer.java"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+        <mapEntry key="integral-system-analysis.firebase.credentials.file" value="N:\Il mio Drive\lottery-util-dd398-firebase-adminsdk-z09lu-9f02863f3a.json"/>
+        <mapEntry key="integral-system-analysis.firebase.url" value="https://lottery-util-dd398-default-rtdb.europe-west1.firebasedatabase.app"/>
+        <mapEntry key="lottery-util.working-path" value="N:\Il mio Drive\Superenalotto"/>
+        <mapEntry key="working-path.integral-system-analysis.folder" value="Software\config\integralSystemsAnalysis"/>
+    </mapAttribute>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_CLASSPATH_ONLY_JAR" value="false"/>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+    <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+    <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/21/"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.rg.game.lottery.application.SEIntegralSystemAnalyzer"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="org.rg.game.lottery"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="onlyShowComputed"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="lottery-util"/>
+    <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+</launchConfiguration>
