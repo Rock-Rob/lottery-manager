@@ -19,6 +19,7 @@ jobs:
    
   launch-integral-system-indexer:
     name: Launch indexer on (JVM ${{ matrix.java }}, ${{ matrix.os }})
+    needs: [ask-for-authorization]
     strategy:
       fail-fast: false
 #      max-parallel: 15
