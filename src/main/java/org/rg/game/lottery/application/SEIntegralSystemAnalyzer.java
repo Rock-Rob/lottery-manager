@@ -194,7 +194,15 @@ public class SEIntegralSystemAnalyzer extends Shared {
 							index(config, indexModeFinal):
 						() ->
 							analyze(config);
-				if (!onlyShowComputed && CollectionUtils.INSTANCE.retrieveBoolean(config, "async", "false")) {
+				if (!onlyShowComputed && CollectionUtils.INSTANCE.retrieveBoolean(
+						config,
+						"async",
+						System.getenv().getOrDefault(
+							"INTEGRAL_SYSTEM_ANALYSIS_ASYNC",
+							"false"
+						)
+					)
+				) {
 					ConcurrentUtils.INSTANCE.addTask(futures, task);
 				} else {
 					task.run();
@@ -1165,7 +1173,15 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			long combinationSize = Long.valueOf(config.getProperty("combination.components"));
 			comboHandler = new ComboHandler(SEStats.NUMBERS, combinationSize);
 			modderForSkipLog = BigInteger.valueOf(1_000_000_000);
-			modderForAutoSave = new BigInteger(config.getProperty("autosave-every", "1000000"));
+			modderForAutoSave = new BigInteger(
+				config.getProperty(
+					"autosave-every",
+					System.getenv().getOrDefault(
+						"INTEGRAL_SYSTEM_ANALYSIS_AUTOSAVE_EVERY",
+						"1000000"
+					)
+				)
+			);
 			rankSize = getRankSize(config);
 			SEStats sEStats = SEStats.get(
 				config.getProperty("competition.archive.start-date"),
