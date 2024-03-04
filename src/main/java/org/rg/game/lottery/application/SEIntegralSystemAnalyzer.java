@@ -458,7 +458,6 @@ public class SEIntegralSystemAnalyzer extends Shared {
 					Block currentBlock = blockSupplier.get();
 					if (currentBlock == null) {
 						iterationData.terminateIteration();
-						return;
 					}
 					if (blockNotAlignedWrapper.get()) {
 						if (iterationData.getCounter().compareTo(currentBlock.start) < 0) {
