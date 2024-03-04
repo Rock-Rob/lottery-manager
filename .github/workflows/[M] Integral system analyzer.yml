@@ -12,9 +12,6 @@ env:
   RESOURCES_INTEGRAL_SYSTEM_ANALYSIS_FOLDER: 'integralSystemsAnalysis'
   TASKS_MAX_PARALLEL: ${{ vars.INTEGRAL_SYSTEM_ANALYSIS_JOB_TASKS_MAX_PARALLEL }}
   TIMEOUT: ${{ vars.INTEGRAL_SYSTEM_ANALYSIS_JOB_TIMEOUT }}
-  #value 0: reset
-  #value 1: index
-  INDEX_MODE: '1'
 
 jobs:
             
@@ -56,6 +53,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Build and launch
+        env:
+          #value 0: reset
+          #value 1: index
+          INDEX_MODE: '1'
         run: mvn -B compile exec:java -P integral-system-analysis --file pom.xml
        
   launch-integral-system-analyzer:
