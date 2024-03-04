@@ -12,9 +12,6 @@ env:
   RESOURCES_INTEGRAL_SYSTEM_ANALYSIS_FOLDER: 'integralSystemsAnalysis'
   TASKS_MAX_PARALLEL: ${{ vars.INTEGRAL_SYSTEM_ANALYSIS_JOB_TASKS_MAX_PARALLEL }}
   TIMEOUT: ${{ vars.INTEGRAL_SYSTEM_ANALYSIS_JOB_TIMEOUT }}
-  #value 0: reset
-  #value 1: index
-  INDEX_MODE: '1'
 
 jobs:
    
