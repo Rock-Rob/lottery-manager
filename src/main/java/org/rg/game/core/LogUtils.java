@@ -43,7 +43,7 @@ public interface LogUtils {
 	public static final DateTimeFormatter dateTimeFormatter =
 		DateTimeFormatter.ofPattern("[dd/MM/yyyy-HH:mm:ss.SSS]")
 		.withZone(TimeUtils.DEFAULT_TIME_ZONE);
-
+	public final static boolean showThreadInfo = Boolean.parseBoolean(System.getenv().getOrDefault("logger.show-thread-info", "false"));
 	static LogUtils retrieveConfiguredLogger() {
 		String loggerType = System.getenv().getOrDefault("logger.type", "console");
 		if (loggerType.equalsIgnoreCase("console")) {
@@ -59,7 +59,7 @@ public interface LogUtils {
 	}
 
 	public default String decorate(String line) {
-		String prefix = dateTimeFormatter.format(LocalDateTime.now()) + " - " + Thread.currentThread() + ": ";
+		String prefix = dateTimeFormatter.format(LocalDateTime.now()) + (showThreadInfo ? " - " + Thread.currentThread() : "") + ": ";
 		if (!line.contains("\n")) {
 			return prefix + line;
 		} else {
