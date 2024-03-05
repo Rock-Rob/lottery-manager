@@ -1,15 +1,11 @@
 package org.rg.game.lottery.application;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -42,6 +38,7 @@ import java.util.stream.IntStream;
 import org.burningwave.Throwables;
 import org.rg.game.core.CollectionUtils;
 import org.rg.game.core.ConcurrentUtils;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.IOUtils;
 import org.rg.game.core.Info;
 import org.rg.game.core.LogUtils;
@@ -69,13 +66,6 @@ import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.cloud.FirestoreClient;
 
 public class SEIntegralSystemAnalyzer extends Shared {
 	private static List<Function<String, Record>> recordLoaders;
@@ -216,77 +206,26 @@ public class SEIntegralSystemAnalyzer extends Shared {
 
 
 	protected static void addFirebaseRecordLoaderAndWriter() throws FileNotFoundException, IOException {
-		String firebaseUrl = Optional.ofNullable(System.getenv().get("integral-system-analysis.firebase.url"))
-			.orElseGet(() -> System.getenv().get("INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_URL"));
-		if (firebaseUrl == null) {
-			throw new NoSuchElementException("Firebase URL not set");
-		}
-		LogUtils.INSTANCE.info("Database URL " + firebaseUrl);
-		InputStream serviceAccount;
-		try {
-			serviceAccount = new ByteArrayInputStream(
-				Optional.ofNullable(System.getenv().get("integral-system-analysis.firebase.credentials"))
-				.orElseGet(() -> System.getenv().get("INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_CREDENTIALS")
-			).getBytes());
-			LogUtils.INSTANCE.info("Credentials loaded from integral-system-analysis.firebase.credentials");
-		} catch (Throwable exc) {
-			String credentialsFilePath =
-				Paths.get(
-					Optional.ofNullable(System.getenv().get("integral-system-analysis.firebase.credentials.file"))
-						.orElseGet(() -> System.getenv().get("INTEGRAL_SYSTEM_ANALYSIS_FIREBASE_CREDENTIALS_FILE"))
-				).normalize().toAbsolutePath().toString();
-			serviceAccount =
-				new FileInputStream(
-					credentialsFilePath
-				);
-			LogUtils.INSTANCE.info("Credentials loaded from " + credentialsFilePath);
-		}
-		FirebaseOptions options = FirebaseOptions.builder()
-			  .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
-			  .setDatabaseUrl(firebaseUrl)
-			  .build();
-
-		FirebaseApp.initializeApp(options);
-		Firestore firestore = FirestoreClient.getFirestore();
-		addFirebaseRecordLoader(firestore);
-		addFirebaseRecordWriter(firestore);
+		addFirebaseRecordLoader();
+		addFirebaseRecordWriter();
 	}
 
 
-	protected static void addFirebaseRecordWriter(Firestore firestore) {
+	protected static void addFirebaseRecordWriter() {
 		recordWriters.add(
 			(String key) -> record -> {
-				DocumentReference recordAsDocumentWrapper =
-					firestore.document("IntegralSystemStats/"+key);
-					//firestore.collection("IntegralSystemStats").document(key);
 				Map<String, Object> recordAsRawValue = new LinkedHashMap<>();
 				recordAsRawValue.put("value", IOUtils.INSTANCE.writeToJSONFormat(record));
-				try {
-					recordAsDocumentWrapper.set(recordAsRawValue).get();
-					LogUtils.INSTANCE.info("Object with id '" + key + "' stored in the Firebase cache");
-				} catch (Throwable exc) {
-					//LogUtils.INSTANCE.error(exc, "Unable to store data to Firebase");
-					Throwables.INSTANCE.throwException(exc);
-				}
+				FirestoreWrapper.get().write("IntegralSystemStats/"+key, recordAsRawValue);
 			}
 		);
 	}
 
 
-	protected static void addFirebaseRecordLoader(Firestore firestore) {
+	protected static void addFirebaseRecordLoader() {
 		recordLoaders.add(
 			(String key) -> {
-				//LogUtils.INSTANCE.info("Loading " + basePath + "/" + key);
-				DocumentReference recordAsDocumentWrapper =
-					firestore.document("IntegralSystemStats/"+key);
-				ApiFuture<DocumentSnapshot> ap = recordAsDocumentWrapper.get();
-				DocumentSnapshot recordAsDocument;
-				try {
-					recordAsDocument = ap.get();
-				} catch (Throwable exc) {
-					return Throwables.INSTANCE.throwException(exc);
-				}
-				return readFromJson((String)recordAsDocument.get("value"));
+				return readFromJson((String)FirestoreWrapper.get().load("IntegralSystemStats/"+key).get("value"));
 			}
 		);
 	}
