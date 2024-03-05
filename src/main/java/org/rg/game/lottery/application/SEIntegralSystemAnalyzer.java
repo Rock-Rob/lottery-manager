@@ -158,13 +158,13 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			exiter.setDaemon(true);
 			exiter.start();
 		}
-		Integer indexMode = indexRawValue != null? Integer.valueOf(indexRawValue) : Integer.valueOf(-1);
+		Integer indexMode = null;
 		if (indexRawValue == null) {
 			indexRawValue = Optional.ofNullable(System.getenv().get("index.mode"))
 					.orElseGet(() -> System.getenv().get("INDEX_MODE"));
-			indexMode = indexRawValue != null? Integer.valueOf(indexRawValue) : Integer.valueOf(-1);
+			indexMode = indexRawValue != null? Integer.valueOf(indexRawValue) : null;
 		}
-		if (indexMode > Integer.valueOf(-1)) {
+		if (indexMode != null) {
 			LogUtils.INSTANCE.info("Indexing mode: " + indexMode);
 		}
 		Integer indexModeFinal = indexMode;
