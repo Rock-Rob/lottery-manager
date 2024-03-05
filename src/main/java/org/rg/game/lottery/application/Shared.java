@@ -122,6 +122,10 @@ class Shared {
 		return SEStats.get(Shared.sEStatsDefaultDate, TimeUtils.getDefaultDateFormat().format(new Date()));
 	}
 
+	static SEStats getSEStatsForLatestExtractionDate() {
+		return SEStats.get(Shared.sEStatsDefaultDate, TimeUtils.getDefaultDateFormat().format(getSEStats().getLatestExtractionDate()));
+	}
+
 	static SEStats getSEAllStats() {
 		return SEStats.get(SEStats.FIRST_EXTRACTION_DATE_AS_STRING, TimeUtils.getDefaultDateFormat().format(new Date()));
 	}

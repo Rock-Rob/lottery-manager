@@ -188,7 +188,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 					onlyShowComputed ?
 						() ->
 							showComputed(config) :
-					indexMode > Integer.valueOf(-1) ?
+					indexMode != null ?
 						() ->
 							index(config, indexModeFinal):
 						() ->
@@ -370,6 +370,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		BigInteger processedBlock = BigInteger.ZERO;
 		CompletableFuture<Void> writingTask = CompletableFuture.runAsync(() -> {});
 		Collection<Block> toBeMerged = new CopyOnWriteArrayList<>();
+		String cacheKey = indexMode.compareTo(0) >= 0 ?
+			processingContext.cacheKey : buildCacheKey(
+				processingContext.comboHandler, Shared.getSEStatsForLatestExtractionDate(), processingContext.premiumsToBeAnalyzed, processingContext.rankSize);
  		for (Block currentBlock : processingContext.record.blocks) {
 			boolean writeRecord = false;
 			processedBlock = processedBlock.add(BigInteger.ONE);
@@ -386,7 +389,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 					toBeMerged.add(currentBlock);
 					writeRecord = processedBlock.mod(processingContext.modderForAutoSave).compareTo(BigInteger.ZERO) == 0 ||
 						processedBlock.intValue() == processingContext.record.blocks.size();
-				} else if (currentBlock.indexes != null && indexMode.compareTo(0) == 0) {
+				} else if (currentBlock.indexes != null && indexMode.compareTo(0) <= 0) {
 					currentBlock.counter = null;
 					currentBlock.indexes = null;
 					writeRecord = processedBlock.mod(processingContext.modderForAutoSave).compareTo(BigInteger.ZERO) == 0 ||
@@ -402,13 +405,13 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				writingTask = CompletableFuture.runAsync(() -> {
 					Block[] blocks = toBeMerged.stream().toArray(Block[]::new);
 					merge(
-						processingContext.cacheKey,
+						cacheKey,
 						processingContext.record,
 						processingContext.systemsRank,
 						processingContext.rankSize,
 						blocks
 					);
-					writeRecord(processingContext.cacheKey, processingContext.record);
+					writeRecord(cacheKey, processingContext.record);
 					for (Block block : blocks) {
 						toBeMerged.remove(block);
 					}
@@ -1159,9 +1162,10 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		private TreeSet<Map.Entry<List<Integer>, Map<Number, Integer>>> systemsRank;
 		private BigInteger modderForAutoSave;
 		private String cacheKey;
+		private String premiumsToBeAnalyzed;
 
 		private ProcessingContext(Properties config) {
-			String premiumsToBeAnalyzed = config.getProperty(
+			premiumsToBeAnalyzed = config.getProperty(
 				"rank.premiums",
 				String.join(",", Premium.allTypesListReversed().stream().map(Object::toString).collect(Collectors.toList()))
 			).replaceAll("\\s+","");
