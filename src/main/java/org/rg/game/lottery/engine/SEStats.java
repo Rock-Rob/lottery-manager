@@ -53,11 +53,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.rg.game.core.FirestoreWrapper;
+import org.rg.game.core.IOUtils;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.MathUtils;
 import org.rg.game.core.TimeUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.firestore.DocumentSnapshot;
 
 public class SEStats {
 	private static final Map<String, SEStats> CACHE;
@@ -156,19 +159,22 @@ public class SEStats {
 		this.endDate = buildDate(endDate);
 		this.allWinningCombos = new TreeMap<>(TimeUtils.reversedDateComparator);
 		this.allWinningCombosWithJollyAndSuperstar = new TreeMap<>(TimeUtils.reversedDateComparator);
-		Collection<DataLoader> dataLoaders = Arrays.asList(
-			new FromGlobalSEStatsDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar),
-			new InternetDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar),
-			new FromExcelDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar)
-		);
+		Collection<DataLoader> dataLoaders = new ArrayList<>();
+		dataLoaders.add(new FromGlobalSEStatsDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar));
+		if (FirestoreWrapper.get() != null) {
+			dataLoaders.add(new FromFirebaseSEStatsDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar));
+		}
+		dataLoaders.add(new InternetDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar));
+		dataLoaders.add(new FromExcelDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar));
 		Collection<DataStorer> dataStorers = new ArrayList<>();
-		if ((startDate.equals(FIRST_EXTRACTION_DATE_AS_STRING) || startDate.equals("02/07/2009")) && TimeUtils.getDefaultDateFormat().format(new Date()).equals(endDate)) {
+		if ((startDate.equals(FIRST_EXTRACTION_DATE_AS_STRING) || startDate.equals(FIRST_EXTRACTION_DATE_WITH_NEW_MACHINE_AS_STRING)) && TimeUtils.getDefaultDateFormat().format(new Date()).equals(endDate)) {
 			/*dataStorers.add(
 				new ToExcelDataStorerV1()
 			);*/
-			dataStorers.add(
-				new ToExcelDataStorerV2(this)
-			);
+			dataStorers.add(new ToExcelDataStorerV2(this));
+			if (FirestoreWrapper.get() != null) {
+				dataStorers.add(new ToFirebaseDataStorer(this));
+			}
 		}
 		boolean dataLoaded = false;
 		for (DataLoader dataLoader : dataLoaders) {
@@ -759,7 +765,8 @@ public class SEStats {
 				Date startDate,
 				Date endDate,
 				Map<Date, List<Integer>> allWinningCombos,
-				Map<Date, List<Integer>> allWinningCombosWithJollyAndSuperstar) {
+				Map<Date, List<Integer>> allWinningCombosWithJollyAndSuperstar
+			) {
 				this.startDate = startDate;
 				this.endDate = endDate;
 				this.allWinningCombos = allWinningCombos;
@@ -907,6 +914,39 @@ public class SEStats {
 
 	}
 
+	private class FromFirebaseSEStatsDataLoader extends DataLoader.Abst {
+
+		FromFirebaseSEStatsDataLoader(Date startDate, Date endDate) {
+			super(startDate, endDate);
+		}
+
+		FromFirebaseSEStatsDataLoader(
+			Date startDate,
+			Date endDate,
+			Map<Date, List<Integer>> allWinningCombos,
+			Map<Date, List<Integer>> allWinningCombosWithJollyAndSuperstar
+		) {
+			super(startDate, endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar);
+		}
+
+		@Override
+		public boolean load() throws Throwable {
+			DocumentSnapshot documentSnapshot = FirestoreWrapper.get().load(ToFirebaseDataStorer.getPath(TimeUtils.getDefaultDateFormat().format(startDate)));
+			Date endDateFromDB = documentSnapshot.getDate("endDate");
+			if (endDateFromDB == null) {
+				return false;
+			}
+			allWinningCombos.putAll(
+				(Map<Date, List<Integer>>)IOUtils.INSTANCE.serializeAndDecode(documentSnapshot.getString("allWinningCombos"))
+			);
+			allWinningCombosWithJollyAndSuperstar.putAll(
+				(Map<Date, List<Integer>>)IOUtils.INSTANCE.serializeAndDecode(documentSnapshot.getString("allWinningCombosWithJollyAndSuperstar"))
+			);
+			return true;
+		}
+
+	}
+
 	private static class FromExcelDataLoader extends DataLoader.Abst {
 		FromExcelDataLoader(Date startDate, Date endDate) {
 			super(startDate, endDate);
@@ -923,7 +963,7 @@ public class SEStats {
 
 		@Override
 		public boolean load() throws Throwable {
-			try (InputStream inputStream = new FileInputStream(PersistentStorage.buildWorkingPath() + File.separator + ToExcelDataStorerV2.getFileName("03/12/1997"));
+			try (InputStream inputStream = new FileInputStream(PersistentStorage.buildWorkingPath() + File.separator + ToExcelDataStorerV2.getFileName(FIRST_EXTRACTION_DATE_AS_STRING));
 				Workbook workbook = new XSSFWorkbook(inputStream);
 			) {
 				Sheet sheet = workbook.getSheet("Storico estrazioni");
@@ -1068,6 +1108,42 @@ public class SEStats {
 			return true;
 		}
 
+	}
+
+	private static class ToFirebaseDataStorer implements DataStorer {
+		SEStats sEStats;
+		private ToFirebaseDataStorer(SEStats sEStats) {
+			this.sEStats = sEStats;
+		}
+
+		private String getPath() {
+			return "SEStats/" + TimeUtils.getDefaultDateFmtForFilePrefix().format(sEStats.startDate) + " - Archivio estrazioni e statistiche";
+		}
+
+		private static String getPath(String startDateFormatted) throws ParseException {
+			return "SEStats/" + TimeUtils.getDefaultDateFmtForFilePrefix().format(TimeUtils.getDefaultDateFormat().parse(startDateFormatted)) + " - Archivio estrazioni e statistiche";
+		}
+
+		@Override
+		public boolean store() throws Throwable {
+			DocumentSnapshot document = FirestoreWrapper.get().load(getPath());
+			Date endDate = document.getDate("endDate");
+			if (endDate == null) {
+				Map<String, Object> recordAsRawValue = new LinkedHashMap<>();
+				recordAsRawValue.put("startDate", sEStats.startDate);
+				recordAsRawValue.put("endDate", sEStats.endDate);
+				recordAsRawValue.put(
+					"allWinningCombos",
+					IOUtils.INSTANCE.serializeAndEncode(new LinkedHashMap<>(sEStats.allWinningCombos))
+				);
+				recordAsRawValue.put(
+					"allWinningCombosWithJollyAndSuperstar",
+					IOUtils.INSTANCE.serializeAndEncode(new LinkedHashMap<>(sEStats.allWinningCombosWithJollyAndSuperstar))
+				);
+				FirestoreWrapper.get().write(getPath(), recordAsRawValue);
+			}
+			return true;
+		}
 	}
 
 	private static class ToExcelDataStorerV2 implements DataStorer {

@@ -1,5 +1,6 @@
 package org.rg.game.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,6 +18,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.Base64;
 
 import org.burningwave.Throwables;
 
@@ -57,16 +59,46 @@ public class IOUtils {
 		return new File(absolutePath);
 	}
 
-	public byte[] serialize(Serializable object) throws IOException {
+	public <S extends Serializable> S serializeAndDecode(String serializedAndEncodedObject) {
+		try {
+			return deserialize(Base64.getDecoder().decode(serializedAndEncodedObject));
+		} catch (IOException exc) {
+			return Throwables.INSTANCE.throwException(exc);
+		}
+	}
+
+	public String serializeAndEncode(Object object) {
+		return new String (
+			Base64.getEncoder().encode(
+				serialize(object)
+			)
+		);
+	}
+
+	public byte[] serialize(Object object) {
 		try (ByteArrayOutputStream bAOS = new ByteArrayOutputStream(); ObjectOutputStream oOS = new ObjectOutputStream(bAOS);) {
 	        oOS.writeObject(object);
 	        return bAOS.toByteArray();
+		} catch (IOException exc) {
+			return Throwables.INSTANCE.throwException(exc);
+		}
+	}
+
+	public <S extends Serializable> S deserialize(byte[] serializedObject) throws IOException {
+		try (ByteArrayInputStream bAIS = new ByteArrayInputStream(serializedObject); ObjectInputStream oIS = new ObjectInputStream(bAIS);) {
+	        return (S)oIS.readObject();
+		} catch (ClassNotFoundException exc) {
+			return Throwables.INSTANCE.throwException(exc);
 		}
 	}
 
 	public String fileToString(String absolutePath, Charset encoding) {
+		return new String(fileContent(absolutePath), encoding);
+	}
+
+	public byte[] fileContent(String absolutePath) {
 		try {
-			return new String(Files.readAllBytes(Paths.get(absolutePath)), encoding);
+			return Files.readAllBytes(Paths.get(absolutePath));
 		} catch (NoSuchFileException exc) {
 			return null;
 		} catch (IOException exc) {

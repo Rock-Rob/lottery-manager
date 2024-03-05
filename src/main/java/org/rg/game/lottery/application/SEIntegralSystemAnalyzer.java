@@ -85,8 +85,6 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			addFirebaseRecordLoaderAndWriter();
 		} catch (NoSuchElementException exc) {
 			LogUtils.INSTANCE.info(exc.getMessage());
-		} catch (Throwable exc) {
-			LogUtils.INSTANCE.error(exc, "Unable to connect to Firebase");
 		} finally {
 			addDefaultRecordLoader();
 			addDefaultRecordWriter();
@@ -206,6 +204,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 
 
 	protected static void addFirebaseRecordLoaderAndWriter() throws FileNotFoundException, IOException {
+		if (FirestoreWrapper.get() == null) {
+			return;
+		}
 		addFirebaseRecordLoader();
 		addFirebaseRecordWriter();
 	}

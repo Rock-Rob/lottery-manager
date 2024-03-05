@@ -61,16 +61,20 @@ public class FirestoreWrapper {
 	}
 
 	public static FirestoreWrapper get() {
-		if (DEFAULT_INSTANCE == null) {
-			synchronized(FirestoreWrapper.class) {
-				if (DEFAULT_INSTANCE == null) {
-					try {
-						DEFAULT_INSTANCE = new FirestoreWrapper(null);
-					} catch (IOException exc) {
-						return Throwables.INSTANCE.throwException(exc);
+		try {
+			if (DEFAULT_INSTANCE == null) {
+				synchronized(FirestoreWrapper.class) {
+					if (DEFAULT_INSTANCE == null) {
+						try {
+							DEFAULT_INSTANCE = new FirestoreWrapper(null);
+						} catch (IOException exc) {
+							return Throwables.INSTANCE.throwException(exc);
+						}
 					}
 				}
 			}
+		} catch (Throwable exc) {
+			LogUtils.INSTANCE.error(exc, "Unable to connect to Firebase");
 		}
 		return DEFAULT_INSTANCE;
 	}
