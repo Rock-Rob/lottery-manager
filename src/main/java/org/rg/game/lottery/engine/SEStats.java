@@ -207,7 +207,7 @@ public class SEStats {
 				}
 			} catch (Throwable exc) {
 				LogUtils.INSTANCE.error(exc);
-				LogUtils.INSTANCE.info(dataStorer.getClass() + " in unable to store extractions data: " + exc.getMessage());
+				LogUtils.INSTANCE.info(dataStorer.getClass() + " is unable to store extractions data: " + exc.getMessage());
 			}
 		}
 	}
