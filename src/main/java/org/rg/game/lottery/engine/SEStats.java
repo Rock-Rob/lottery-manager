@@ -194,7 +194,10 @@ public class SEStats {
 
 		loadStats();
 		LogUtils.INSTANCE.info();
-		LogUtils.INSTANCE.info("All extraction data have been succesfully loaded for period " + startDate + " -> " + endDate + " by " + dataLoaderClass.getName());
+		LogUtils.INSTANCE.info(
+			"All extraction data have been succesfully loaded for period " + startDate + " -> " + endDate +
+			Optional.ofNullable(dataLoaderClass).map(loaderClass -> " by " + loaderClass.getSimpleName()).orElseGet(() -> "")
+		);
 		for (DataStorer dataStorer : dataStorers) {
 			try {
 				if (dataStorer.store()) {
