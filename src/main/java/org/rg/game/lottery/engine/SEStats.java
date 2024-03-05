@@ -177,9 +177,11 @@ public class SEStats {
 			}
 		}
 		boolean dataLoaded = false;
+		Class<DataLoader> dataLoaderClass = null;
 		for (DataLoader dataLoader : dataLoaders) {
 			try {
 				if (dataLoaded = dataLoader.load()) {
+					dataLoaderClass = (Class<DataLoader>)dataLoader.getClass();
 					break;
 				}
 			} catch (Throwable exc) {
@@ -192,7 +194,7 @@ public class SEStats {
 
 		loadStats();
 		LogUtils.INSTANCE.info();
-		LogUtils.INSTANCE.info("All extraction data have been succesfully loaded for period " + startDate + " -> " + endDate);
+		LogUtils.INSTANCE.info("All extraction data have been succesfully loaded for period " + startDate + " -> " + endDate + " by " + dataLoaderClass.getName());
 		for (DataStorer dataStorer : dataStorers) {
 			try {
 				if (dataStorer.store()) {
