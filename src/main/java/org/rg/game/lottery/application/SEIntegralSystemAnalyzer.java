@@ -29,9 +29,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -379,40 +379,40 @@ public class SEIntegralSystemAnalyzer extends Shared {
 	protected static void analyze(Properties config) {
 		ProcessingContext processingContext = new ProcessingContext(config);
 		boolean printBlocks = CollectionUtils.INSTANCE.retrieveBoolean(config, "log.print.blocks", "true");
+		BiFunction<AtomicReference<Block>, AtomicBoolean, Block> blockSupplier = (currentBlockWrapper, blockNotAlignedWrapper) -> {
+			Block block = currentBlockWrapper.get();
+			if (block != null && block.counter != null && block.counter.compareTo(block.end) >= 0) {
+				currentBlockWrapper.set(block = null);
+			}
+			if (block == null) {
+				Iterator<Block> blocksIterator =  processingContext.assignedBlocks.iterator();
+				while (blocksIterator.hasNext()) {
+					block = blocksIterator.next();
+					blocksIterator.remove();
+					if (block.counter != null && block.counter.compareTo(block.end) >= 0) {
+						continue;
+					}
+					currentBlockWrapper.set(block);
+					blockNotAlignedWrapper.set(true);
+					LogUtils.INSTANCE.info("Received in assignment " + block);
+					break;
+				}
+			}
+			return block;
+		};
 		while (!processingContext.assignedBlocks.isEmpty()) {
 			AtomicReference<Block> currentBlockWrapper = new AtomicReference<>();
 			AtomicBoolean blockNotAlignedWrapper = new AtomicBoolean(false);
-			Supplier<Block> blockSupplier = () -> {
-				Block block = currentBlockWrapper.get();
-				if (block != null && block.counter != null && block.counter.compareTo(block.end) >= 0) {
-					currentBlockWrapper.set(block = null);
-				}
-				if (block == null) {
-					Iterator<Block> blocksIterator =  processingContext.assignedBlocks.iterator();
-					while (blocksIterator.hasNext()) {
-						block = blocksIterator.next();
-						blocksIterator.remove();
-						if (block.counter != null && block.counter.compareTo(block.end) >= 0) {
-							continue;
-						}
-						currentBlockWrapper.set(block);
-						blockNotAlignedWrapper.set(true);
-						LogUtils.INSTANCE.info("Received in assignment " + block);
-						break;
-					}
-				}
-				return block;
-			};
-			Block absignedBlock = blockSupplier.get();
+			Block assignedBlock = blockSupplier.apply(currentBlockWrapper, blockNotAlignedWrapper);
 			BigInteger sizeOfIntegralSystemMatrix = processingContext.comboHandler.getSize();
 			String sizeOfIntegralSystemMatrixAsString = MathUtils.INSTANCE.format(sizeOfIntegralSystemMatrix);
-			if (absignedBlock.counter == null && absignedBlock.indexes == null) {
-				absignedBlock.counter = BigInteger.ZERO;
+			if (assignedBlock.counter == null && assignedBlock.indexes == null) {
+				assignedBlock.counter = BigInteger.ZERO;
 			}
 			processingContext.comboHandler.iterateFrom(
-				processingContext.comboHandler.new IterationData(absignedBlock.indexes, absignedBlock.counter),
+				processingContext.comboHandler.new IterationData(assignedBlock.indexes, assignedBlock.counter),
 				iterationData -> {
-					Block currentBlock = blockSupplier.get();
+					Block currentBlock = blockSupplier.apply(currentBlockWrapper, blockNotAlignedWrapper);
 					if (currentBlock == null) {
 						iterationData.terminateIteration();
 					}
