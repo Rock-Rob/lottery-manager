@@ -27,11 +27,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -375,116 +373,60 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		printData(processingContext.record, true);
 	}
 
-
 	protected static void analyze(Properties config) {
 		ProcessingContext processingContext = new ProcessingContext(config);
 		boolean printBlocks = CollectionUtils.INSTANCE.retrieveBoolean(config, "log.print.blocks", "true");
+		BigInteger sizeOfIntegralSystemMatrix = processingContext.comboHandler.getSize();
+		String sizeOfIntegralSystemMatrixAsString = MathUtils.INSTANCE.format(sizeOfIntegralSystemMatrix);
 		while (!processingContext.assignedBlocks.isEmpty()) {
-			AtomicReference<Block> currentBlockWrapper = new AtomicReference<>();
-			AtomicBoolean blockNotAlignedWrapper = new AtomicBoolean(false);
-			Supplier<Block> blockSupplier = () -> {
-				Block block = currentBlockWrapper.get();
-				if (block != null && block.counter != null && block.counter.compareTo(block.end) >= 0) {
-					currentBlockWrapper.set(block = null);
+			Iterator<Block> blockIterator = processingContext.assignedBlocks.iterator();
+			while (blockIterator.hasNext()) {
+				Block currentBlock = blockIterator.next();
+				if (currentBlock.indexes == null) {
+					currentBlock.indexes = processingContext.comboHandler.computeIndexes(currentBlock.start);
 				}
-				if (block == null) {
-					Iterator<Block> blocksIterator =  processingContext.assignedBlocks.iterator();
-					while (blocksIterator.hasNext()) {
-						block = blocksIterator.next();
-						blocksIterator.remove();
-						if (block.counter != null && block.counter.compareTo(block.end) >= 0) {
-							continue;
-						}
-						currentBlockWrapper.set(block);
-						blockNotAlignedWrapper.set(true);
-						LogUtils.INSTANCE.info(
-							NetworkUtils.INSTANCE.thisHostName() +
-							" (" + NetworkUtils.INSTANCE.thisHostAddress() + ")" + " received in assignment " + block
-						);
-						break;
-					}
+				if (currentBlock.counter == null) {
+					currentBlock.counter = processingContext.comboHandler.computeCounter(currentBlock.indexes);
 				}
-				return block;
-			};
-			Block assignedBlock = blockSupplier.get();
-			BigInteger sizeOfIntegralSystemMatrix = processingContext.comboHandler.getSize();
-			String sizeOfIntegralSystemMatrixAsString = MathUtils.INSTANCE.format(sizeOfIntegralSystemMatrix);
-			if (assignedBlock.counter == null && assignedBlock.indexes == null) {
-				assignedBlock.counter = BigInteger.ZERO;
-			}
-			processingContext.comboHandler.iterateFrom(
-				processingContext.comboHandler.new IterationData(assignedBlock.indexes, assignedBlock.counter),
-				iterationData -> {
-					Block currentBlock = blockSupplier.get();
-					if (currentBlock == null) {
-						iterationData.terminateIteration();
-					}
-					if (blockNotAlignedWrapper.get()) {
-						if (iterationData.getCounter().compareTo(currentBlock.start) < 0) {
-							if (iterationData.getCounter().mod(processingContext.modderForSkipLog).compareTo(BigInteger.ZERO) == 0) {
-								LogUtils.INSTANCE.info(
-									"Skipped " + MathUtils.INSTANCE.format(iterationData.getCounter()) +
-									" of " + sizeOfIntegralSystemMatrixAsString + " systems to reach " +
-									currentBlock
-								);
-							}
-							return;
-						} else if (iterationData.getCounter().compareTo(currentBlock.end) > 0) {//In caso di anomalia terminiamo l'iterazione del blocco
+				processingContext.comboHandler.iterateFrom(
+					processingContext.comboHandler.new IterationData(currentBlock.indexes, currentBlock.counter),
+					iterationData -> {
+						if (iterationData.getCounter().compareTo(currentBlock.end) > 0 || currentBlock.counter.compareTo(currentBlock.end) == 0) {//In caso di anomalia terminiamo l'iterazione del blocco
 							LogUtils.INSTANCE.warn("Right bound exceeded for " + currentBlock + ". Counter value: " + iterationData.getCounter());
-							currentBlockWrapper.set(null);
 							iterationData.terminateIteration();
 						}
-						BigInteger currentBlockCounter = currentBlock.counter;
-						if (currentBlockCounter != null) {
-							if (currentBlockCounter.compareTo(iterationData.getCounter()) > 0) {
-								return;
-							}
-							if (currentBlockCounter.compareTo(iterationData.getCounter()) == 0) {
-								LogUtils.INSTANCE.info(
-									"Skipped " + MathUtils.INSTANCE.format(iterationData.getCounter()) + " of " + sizeOfIntegralSystemMatrixAsString + " systems\n" +
-									"Cache succesfully restored, starting from the " + MathUtils.INSTANCE.format(iterationData.getCounter()) + " system. " +
-									MathUtils.INSTANCE.format(remainedSystemsCounter(processingContext.record)) + " systems remained."
-								);
-								printDataIfChanged(
-									processingContext.record,
-									processingContext.previousLoggedRankWrapper,
-									printBlocks
-								);
-								return;
-							}
+						currentBlock.counter = iterationData.getCounter();
+						//Operazione spostata prima dell'operazione di store per motivi di performance:
+						//in caso di anomalie decomentarla e cancellare la riga più in basso
+						//assignedBlock.indexes = iterationData.copyOfIndexes();
+						List<Integer> combo = iterationData.getCombo();
+						Map<Number, Integer> allPremiums = computePremiums(processingContext, combo);
+						if (filterCombo(allPremiums, Premium.TYPE_FIVE)) {
+							tryToAddCombo(processingContext, combo, allPremiums);
 						}
-						blockNotAlignedWrapper.set(false);
+						if (iterationData.getCounter().mod(processingContext.modderForAutoSave).compareTo(BigInteger.ZERO) == 0 ||
+							iterationData.getCounter().compareTo(currentBlock.end) == 0) {
+							currentBlock.indexes = iterationData.copyOfIndexes(); //Ottimizzazione: in caso di anomalie eliminare questa riga e decommentare la riga più in alto (vedere commento)
+							mergeAndStore(
+								processingContext.cacheKey,
+								processingContext.record,
+								processingContext.systemsRank,
+								processingContext.rankSize,
+								currentBlock
+							);
+							printDataIfChanged(
+								processingContext.record,
+								processingContext.previousLoggedRankWrapper,
+								printBlocks
+							);
+							LogUtils.INSTANCE.info(
+								MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
+								sizeOfIntegralSystemMatrixAsString + " systems have been analyzed"
+							);
+			    		}
 					}
-					currentBlock.counter = iterationData.getCounter();
-					//Operazione spostata prima dell'operazione di store per motivi di performance:
-					//in caso di anomalie decomentarla e cancellare la riga più in basso
-					//currentBlock.indexes = iterationData.copyOfIndexes();
-					List<Integer> combo = iterationData.getCombo();
-					Map<Number, Integer> allPremiums = computePremiums(processingContext, combo);
-					if (filterCombo(allPremiums, Premium.TYPE_FIVE)) {
-						tryToAddCombo(processingContext, combo, allPremiums);
-					}
-					if (iterationData.getCounter().mod(processingContext.modderForAutoSave).compareTo(BigInteger.ZERO) == 0 || iterationData.getCounter().compareTo(currentBlock.end) == 0) {
-						currentBlock.indexes = iterationData.copyOfIndexes(); //Ottimizzazione: in caso di anomalie eliminare questa riga e decommentare la riga più in alto (vedere commento)
-						mergeAndStore(
-							processingContext.cacheKey,
-							processingContext.record,
-							processingContext.systemsRank,
-							processingContext.rankSize,
-							currentBlock
-						);
-						printDataIfChanged(
-							processingContext.record,
-							processingContext.previousLoggedRankWrapper,
-							printBlocks
-						);
-						LogUtils.INSTANCE.info(
-							MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
-							sizeOfIntegralSystemMatrixAsString + " systems have been analyzed"
-						);
-		    		}
-				}
-			);
+				);
+			}
 			if (processingContext.assignedBlocks.isEmpty()) {
 				processingContext.assignedBlocks.addAll(retrieveAssignedBlocks(config, processingContext.record));
 			}
