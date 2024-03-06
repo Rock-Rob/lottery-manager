@@ -394,7 +394,10 @@ public class SEIntegralSystemAnalyzer extends Shared {
 					}
 					currentBlockWrapper.set(block);
 					blockNotAlignedWrapper.set(true);
-					LogUtils.INSTANCE.info("Received in assignment " + block);
+					LogUtils.INSTANCE.info(
+						NetworkUtils.INSTANCE.thisHostName() +
+						" (" + NetworkUtils.INSTANCE.thisHostAddress() + ")" + " received in assignment " + block
+					);
 					break;
 				}
 			}

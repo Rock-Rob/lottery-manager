@@ -17,4 +17,12 @@ public class NetworkUtils {
 		}
 	}
 
+	public String thisHostAddress() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException exc) {
+			return Throwables.INSTANCE.throwException(exc);
+		}
+	}
+
 }
