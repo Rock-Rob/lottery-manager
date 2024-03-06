@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -38,14 +39,39 @@ import javax.swing.text.StyledDocument;
 import org.burningwave.Throwables;
 import org.rg.game.lottery.engine.PersistentStorage;
 
-public interface LogUtils {
-	public static final LogUtils INSTANCE = retrieveConfiguredLogger();
-	public static final DateTimeFormatter dateTimeFormatter =
-		DateTimeFormatter.ofPattern("[dd/MM/yyyy-HH:mm:ss.SSS]")
-		.withZone(TimeUtils.DEFAULT_TIME_ZONE);
-	public final static boolean showThreadInfo = Boolean.parseBoolean(System.getenv().getOrDefault("logger.show-thread-info", "false"));
+public abstract class LogUtils {
+	public static final LogUtils INSTANCE;
+	public static final DateTimeFormatter dateTimeFormatter;
+	private static Supplier<String> infoSupplier;
+
+	static {
+		INSTANCE = retrieveConfiguredLogger();
+		dateTimeFormatter =
+			DateTimeFormatter.ofPattern("[dd/MM/yyyy-HH:mm:ss.SSS]")
+			.withZone(TimeUtils.DEFAULT_TIME_ZONE);
+		boolean showThreadInfo = Boolean.parseBoolean(
+			System.getenv().getOrDefault("logger.show-thread-info", System.getenv().getOrDefault("LOGGER_SHOW_THREAD_INFO", "false"))
+		);
+		boolean showTime = Boolean.parseBoolean(
+			System.getenv().getOrDefault("logger.show-time", System.getenv().getOrDefault("LOGGER_SHOW_TIME", "true"))
+		);
+		if (showThreadInfo && showTime) {
+			infoSupplier = () ->
+				dateTimeFormatter.format(LocalDateTime.now()) +" - " + Thread.currentThread() + ": ";
+		} else if (showThreadInfo) {
+			infoSupplier = () ->
+				Thread.currentThread() + ": ";
+		} else if (showTime) {
+			infoSupplier = () ->
+				dateTimeFormatter.format(LocalDateTime.now()) + ": ";
+		} else {
+			infoSupplier = () ->
+				"";
+		}
+	}
+
 	static LogUtils retrieveConfiguredLogger() {
-		String loggerType = System.getenv().getOrDefault("logger.type", "console");
+		String loggerType = System.getenv().getOrDefault("logger.type", System.getenv().getOrDefault("LOGGER_TYPE", "console"));
 		if (loggerType.equalsIgnoreCase("console")) {
 			return new LogUtils.ToConsole();
 		} else if (loggerType.equalsIgnoreCase("file")) {
@@ -58,8 +84,8 @@ public interface LogUtils {
 		throw new IllegalArgumentException(loggerType + " is not a valid logger type");
 	}
 
-	public default String decorate(String line) {
-		String prefix = dateTimeFormatter.format(LocalDateTime.now()) + (showThreadInfo ? " - " + Thread.currentThread() : "") + ": ";
+	String decorate(String line) {
+		String prefix = infoSupplier.get();
 		if (!line.contains("\n")) {
 			return prefix + line;
 		} else {
@@ -72,17 +98,17 @@ public interface LogUtils {
 	}
 
 
-	public void debug(String... reports);
+	public abstract void debug(String... reports);
 
-	public void info(String... reports);
+	public abstract void info(String... reports);
 
-	public void warn(String... reports);
+	public abstract void warn(String... reports);
 
-	public void error(String... reports);
+	public abstract void error(String... reports);
 
-	public void error(Throwable exc, String... reports);
+	public abstract void error(Throwable exc, String... reports);
 
-	public static class ToConsole implements LogUtils {
+	public static class ToConsole extends LogUtils {
 
 		@Override
 		public void debug(String... reports) {
@@ -132,7 +158,7 @@ public interface LogUtils {
 		}
 	}
 
-	public static class ToFile implements LogUtils {
+	public static class ToFile extends LogUtils {
 		public final static Map<String, ToFile> INSTANCES = new ConcurrentHashMap<>();
 		private BufferedWriter writer;
 
@@ -225,7 +251,7 @@ public interface LogUtils {
 
 	}
 
-	public static class ToWindow implements LogUtils {
+	public static class ToWindow extends LogUtils {
 		private Consumer<String> debugLogger;
 		private Consumer<String> infoLogger;
 		private Consumer<String> warnLogger;

@@ -68,20 +68,27 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 
 public class SEIntegralSystemAnalyzer extends Shared {
+	private static final long MIN_BLOCK_SIZE;
+	private static final long MAX_BLOCK_SIZE;
+
 	private static List<Function<String, Record>> recordLoaders;
 	private static List<Function<String, Consumer<Record>>> recordWriters;
 	private static List<Function<String, Consumer<Record>>> localRecordWriters;
 
+	static {
+		MIN_BLOCK_SIZE = 25_000_000L;
+		MAX_BLOCK_SIZE = 100_000_000L;
+		recordWriters = new ArrayList<>();
+		recordLoaders = new ArrayList<>();
+		localRecordWriters = new ArrayList<>();
+		IOUtils.INSTANCE.getObjectMapper().registerModule(
+			new SimpleModule().addDeserializer(Record.class, new Record.Deserializer())
+		);
+	}
 
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
 		try {
-			IOUtils.INSTANCE.getObjectMapper().registerModule(
-				new SimpleModule().addDeserializer(Record.class, new Record.Deserializer())
-			);
-			recordWriters = new ArrayList<>();
-			recordLoaders = new ArrayList<>();
-			localRecordWriters = new ArrayList<>();
 			addFirebaseRecordLoaderAndWriter();
 		} catch (NoSuchElementException exc) {
 			LogUtils.INSTANCE.info(exc.getMessage());
@@ -708,9 +715,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 					Math.max(
 						Math.min(
 							cH.getSizeAsLong() / 50,
-							100_000_000L
+							MAX_BLOCK_SIZE
 						),
-					25_000_000L
+					MIN_BLOCK_SIZE
 				)
 			);
 			cacheRecordTemp.blocks =
