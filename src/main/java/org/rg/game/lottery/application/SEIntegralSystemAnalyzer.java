@@ -433,7 +433,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 							);
 							LogUtils.INSTANCE.info(
 								MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
-								sizeOfIntegralSystemMatrixAsString + " systems have been analyzed"
+								sizeOfIntegralSystemMatrixAsString + " systems have been analyzed (" +
+								MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " of " +
+								MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " blocks processed)"
 							);
 			    		}
 					}
@@ -633,6 +635,15 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				"[" + TimeUtils.getAlternativeDateFormat().format(sEStats.getEndDate()) + "]";
 	}
 
+	protected static BigInteger processedBlockCounter(Record record) {
+		BigInteger processed = BigInteger.ZERO;
+		for (Block block : record.blocks) {
+			if (block.counter != null && block.counter.compareTo(block.end) == 0) {
+				processed = processed.add(BigInteger.ONE);
+			}
+		}
+		return processed;
+	}
 
 	protected static BigInteger processedSystemsCounter(Record record) {
 		BigInteger processed = BigInteger.ZERO;
