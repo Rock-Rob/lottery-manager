@@ -18,7 +18,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.PrimitiveIterator.OfLong;
 import java.util.Properties;
@@ -86,16 +85,11 @@ public class SEIntegralSystemAnalyzer extends Shared {
 
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
-		try {
-			addFirebaseRecordLoaderAndWriter();
-		} catch (NoSuchElementException exc) {
-			LogUtils.INSTANCE.info(exc.getMessage());
-		} finally {
-			addDefaultRecordLoader();
-			addDefaultRecordWriter();
-			addJSONRecordLoader();
-			addJSONRecordWriter();
-		}
+		addFirebaseRecordLoaderAndWriter();
+		addDefaultRecordLoader();
+		addDefaultRecordWriter();
+		addJSONRecordLoader();
+		addJSONRecordWriter();
 
 		String[] configurationFileFolders = ResourceUtils.INSTANCE.pathsFromSystemEnv(
 			"working-path.integral-system-analysis.folder",
@@ -353,8 +347,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 						cacheKey,
 						processingContext.record,
 						processingContext.systemsRank,
-						processingContext.rankSize,
-						blocks
+						processingContext.rankSize
 					);
 					writeRecord(cacheKey, processingContext.record);
 					for (Block block : blocks) {
@@ -396,10 +389,24 @@ public class SEIntegralSystemAnalyzer extends Shared {
 							blockIterator.remove();
 							iterationData.terminateIteration();
 						}
-						//Se altri runner remoti hanno modificato il blocco skippiamo fino
-						//a che il cursore non si è allineato al blocco
+						//Se altri runner remoti hanno modificato il blocco...
 						if (currentBlock.counter.compareTo(iterationData.getCounter()) >= 0) {
-							return;
+							//... Allieniamo i blocchi
+							mergeAndStore(
+								processingContext.cacheKey,
+								processingContext.record,
+								processingContext.systemsRank,
+								processingContext.rankSize
+							);
+							printDataIfChanged(
+								processingContext.record,
+								processingContext.previousLoggedRankWrapper,
+								printBlocks
+							);
+							LogUtils.INSTANCE.info(
+								"Skipping block " + currentBlock + " because it is being processed by others"
+							);
+							iterationData.terminateIteration();
 						}
 						currentBlock.counter = iterationData.getCounter();
 						//Operazione spostata prima dell'operazione di store per motivi di performance:
@@ -417,8 +424,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 								processingContext.cacheKey,
 								processingContext.record,
 								processingContext.systemsRank,
-								processingContext.rankSize,
-								currentBlock
+								processingContext.rankSize
 							);
 							printDataIfChanged(
 								processingContext.record,
@@ -864,10 +870,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		String cacheKey,
 		Record toBeCached,
 		TreeSet<Entry<List<Integer>, Map<Number, Integer>>> systemsRank,
-		int rankSize,
-		Block... blocks
+		int rankSize
 	){
-		merge(cacheKey, toBeCached, systemsRank, rankSize, blocks);
+		merge(cacheKey, toBeCached, systemsRank, rankSize);
 		writeRecord(cacheKey, toBeCached);
 	}
 
@@ -876,26 +881,21 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		String cacheKey,
 		Record toBeCached,
 		TreeSet<Entry<List<Integer>, Map<Number, Integer>>> systemsRank,
-		int rankSize,
-		Block... blocks
+		int rankSize
 	){
-		Record cacheRecord = loadRecord(cacheKey);
+		Record cachedRecord = loadRecord(cacheKey);
 		//long elapsedTime = System.currentTimeMillis();
-		if (cacheRecord != null) {
-			systemsRank.addAll(cacheRecord.data);
-			for (Block currentBlock : blocks) {
-				List<Block> cachedBlocks = (List<Block>)cacheRecord.blocks;
-				for (int i = 0; i < cachedBlocks.size(); i++) {
-					Block toBeCachedBlock = ((List<Block>)toBeCached.blocks).get(i);
-					if (currentBlock == toBeCachedBlock) {
-						continue;
-					}
-					Block cachedBlock = cachedBlocks.get(i);
-					BigInteger cachedBlockCounter = cachedBlock.counter;
-					if (cachedBlockCounter != null && (toBeCachedBlock.counter == null || cachedBlockCounter.compareTo(toBeCachedBlock.counter) > 0)) {
-						toBeCachedBlock.counter = cachedBlock.counter;
-						toBeCachedBlock.indexes = cachedBlock.indexes;
-					}
+		if (cachedRecord != null) {
+			systemsRank.addAll(cachedRecord.data);
+			List<Block> cachedBlocks = (List<Block>)cachedRecord.blocks;
+			List<Block> toBeCachedBlocks = (List<Block>)toBeCached.blocks;
+			for (int i = 0; i < toBeCachedBlocks.size(); i++) {
+				Block toBeCachedBlock = toBeCachedBlocks.get(i);
+				Block cachedBlock = cachedBlocks.get(i);
+				BigInteger cachedBlockCounter = cachedBlock.counter;
+				if (cachedBlockCounter != null && (toBeCachedBlock.counter == null || cachedBlockCounter.compareTo(toBeCachedBlock.counter) > 0)) {
+					toBeCachedBlock.counter = cachedBlock.counter;
+					toBeCachedBlock.indexes = cachedBlock.indexes;
 				}
 			}
 		}

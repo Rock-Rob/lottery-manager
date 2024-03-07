@@ -73,6 +73,8 @@ public class FirestoreWrapper {
 					}
 				}
 			}
+		} catch (NoSuchElementException exc) {
+			LogUtils.INSTANCE.info(exc.getMessage());
 		} catch (Throwable exc) {
 			LogUtils.INSTANCE.error(exc, "Unable to connect to Firebase");
 		}
