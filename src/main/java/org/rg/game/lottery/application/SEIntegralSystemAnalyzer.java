@@ -391,7 +391,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 						}
 						//Se altri runner remoti hanno modificato il blocco...
 						if (currentBlock.counter.compareTo(iterationData.getCounter()) >= 0) {
-							//... Allieniamo i blocchi
+							//... Allineiamo i blocchi
 							mergeAndStore(
 								processingContext.cacheKey,
 								processingContext.record,
