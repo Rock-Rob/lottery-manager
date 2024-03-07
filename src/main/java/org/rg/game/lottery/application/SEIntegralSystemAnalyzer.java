@@ -65,16 +65,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 
 public class SEIntegralSystemAnalyzer extends Shared {
-	private static final long MIN_BLOCK_SIZE;
-	private static final long MAX_BLOCK_SIZE;
 
 	private static List<Function<String, Record>> recordLoaders;
 	private static List<Function<String, Consumer<Record>>> recordWriters;
 	private static List<Function<String, Consumer<Record>>> localRecordWriters;
 
 	static {
-		MIN_BLOCK_SIZE = 10_000_000L;
-		MAX_BLOCK_SIZE = 100_000_000L;
 		recordWriters = new ArrayList<>();
 		recordLoaders = new ArrayList<>();
 		localRecordWriters = new ArrayList<>();
@@ -433,9 +429,10 @@ public class SEIntegralSystemAnalyzer extends Shared {
 							);
 							LogUtils.INSTANCE.info(
 								MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
-								sizeOfIntegralSystemMatrixAsString + " systems have been analyzed (" +
-								MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " of " +
-								MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " blocks processed)"
+								sizeOfIntegralSystemMatrixAsString + " systems analyzed; " +
+								MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " blocks processed and " +
+								MathUtils.INSTANCE.format(startedBlockCounter(processingContext.record)) + " blocks started of " +
+								MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " blocks"
 							);
 			    		}
 					}
@@ -645,6 +642,16 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		return processed;
 	}
 
+	protected static BigInteger startedBlockCounter(Record record) {
+		BigInteger started = BigInteger.ZERO;
+		for (Block block : record.blocks) {
+			if (block.counter != null && block.counter.compareTo(block.start) > 0 && block.counter.compareTo(block.end) < 0) {
+				started = started.add(BigInteger.ONE);
+			}
+		}
+		return started;
+	}
+
 	protected static BigInteger processedSystemsCounter(Record record) {
 		BigInteger processed = BigInteger.ZERO;
 		for (Block block : record.blocks) {
@@ -679,20 +686,33 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			cacheRecordTemp = new Record();
 		}
 		if (cacheRecordTemp.blocks == null) {
-			BigInteger blockSize =
-				BigInteger.valueOf(
-					Math.max(
-						Math.min(
-							cH.getSizeAsLong() / 50,
-							MAX_BLOCK_SIZE
-						),
-					MIN_BLOCK_SIZE
-				)
-			);
+			BigInteger blockSize = computeBlockSize(cH);
+			ComboHandler cHForComputationOfMaxBlockSize = new ComboHandler(SEStats.NUMBERS, 9L);
 			cacheRecordTemp.blocks =
-				divide(cH.getSize(), cH.getSize().divide(blockSize).longValue());
+				divide(
+					cH.getSize(),
+					Math.min(
+						cH.getSize().divide(blockSize).longValue(),
+						cHForComputationOfMaxBlockSize.getSize().divide(blockSize).longValue()
+					)
+				);
 		}
 		return cacheRecordTemp;
+	}
+
+
+	protected static BigInteger computeBlockSize(ComboHandler cH) {
+		BigInteger blockSize =
+			BigInteger.valueOf(
+				Math.max(
+					Math.min(
+						cH.getSizeAsLong() / 50,
+						100_000_000L
+					),
+				10_000_000L
+			)
+		);
+		return blockSize;
 	}
 
 
