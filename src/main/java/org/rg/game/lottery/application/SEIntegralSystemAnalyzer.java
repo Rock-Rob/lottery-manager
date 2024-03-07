@@ -393,6 +393,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 					iterationData -> {
 						if (iterationData.getCounter().compareTo(currentBlock.end) > 0) {
 							LogUtils.INSTANCE.warn("Right bound exceeded for " + currentBlock + ". Counter value: " + iterationData.getCounter());
+							blockIterator.remove();
 							iterationData.terminateIteration();
 						}
 						//Se altri runner remoti hanno modificato il blocco skippiamo fino
