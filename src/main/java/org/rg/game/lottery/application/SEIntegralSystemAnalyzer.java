@@ -391,9 +391,14 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				processingContext.comboHandler.iterateFrom(
 					processingContext.comboHandler.new IterationData(currentBlock.indexes, currentBlock.counter),
 					iterationData -> {
-						if (iterationData.getCounter().compareTo(currentBlock.end) > 0) {//In caso di anomalia terminiamo l'iterazione del blocco
+						if (iterationData.getCounter().compareTo(currentBlock.end) > 0) {
 							LogUtils.INSTANCE.warn("Right bound exceeded for " + currentBlock + ". Counter value: " + iterationData.getCounter());
 							iterationData.terminateIteration();
+						}
+						//Se altri runner remoti hanno modificato il blocco skippiamo fino
+						//a che il cursore non si è allineato al blocco
+						if (currentBlock.counter.compareTo(iterationData.getCounter()) >= 0) {
+							return;
 						}
 						currentBlock.counter = iterationData.getCounter();
 						//Operazione spostata prima dell'operazione di store per motivi di performance:
