@@ -297,6 +297,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			MathUtils.INSTANCE.format(processingContext.comboHandler.getSize()) +
 			" systems processed\n"
 		);
+		printBlocksInfo(processingContext);
 	}
 
 
@@ -365,8 +366,6 @@ public class SEIntegralSystemAnalyzer extends Shared {
 	protected static void analyze(Properties config) {
 		ProcessingContext processingContext = new ProcessingContext(config);
 		boolean printBlocks = CollectionUtils.INSTANCE.retrieveBoolean(config, "log.print.blocks", "true");
-		BigInteger sizeOfIntegralSystemMatrix = processingContext.comboHandler.getSize();
-		String sizeOfIntegralSystemMatrixAsString = MathUtils.INSTANCE.format(sizeOfIntegralSystemMatrix);
 		while (!processingContext.assignedBlocks.isEmpty()) {
 			Iterator<Block> blockIterator = processingContext.assignedBlocks.iterator();
 			while (blockIterator.hasNext()) {
@@ -427,13 +426,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 								processingContext.previousLoggedRankWrapper,
 								printBlocks
 							);
-							LogUtils.INSTANCE.info(
-								MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
-								sizeOfIntegralSystemMatrixAsString + " systems analyzed; " +
-								MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " blocks processed and " +
-								MathUtils.INSTANCE.format(startedBlockCounter(processingContext.record)) + " blocks started of " +
-								MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " blocks"
-							);
+							printBlocksInfo(processingContext);
 			    		}
 					}
 				);
@@ -850,6 +843,17 @@ public class SEIntegralSystemAnalyzer extends Shared {
 	}
 
 
+	protected static void printBlocksInfo(ProcessingContext processingContext) {
+		LogUtils.INSTANCE.info(
+			MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
+			processingContext.sizeOfIntegralSystemMatrixAsString + " systems analyzed; " +
+			MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " blocks processed and " +
+			MathUtils.INSTANCE.format(startedBlockCounter(processingContext.record)) + " blocks started of " +
+			MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " blocks"
+		);
+	}
+
+
 	protected static Record loadRecord(String cacheKey) {
 		List<Throwable> exceptions = new ArrayList<>();
 		for (Function<String, Record> recordLoader : recordLoaders) {
@@ -1099,6 +1103,8 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		private BigInteger modderForAutoSave;
 		private String cacheKey;
 		private String premiumsToBeAnalyzed;
+		private BigInteger sizeOfIntegralSystemMatrix;
+		private String sizeOfIntegralSystemMatrixAsString;
 
 		private ProcessingContext(Properties config) {
 			premiumsToBeAnalyzed = config.getProperty(
@@ -1137,6 +1143,8 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			);
 			assignedBlocks = retrieveAssignedBlocks(config, record);
 			previousLoggedRankWrapper = new AtomicReference<>();
+			sizeOfIntegralSystemMatrix = comboHandler.getSize();
+			sizeOfIntegralSystemMatrixAsString = MathUtils.INSTANCE.format(sizeOfIntegralSystemMatrix);
 		}
 
 		protected static Integer getRankSize(Properties config) {
