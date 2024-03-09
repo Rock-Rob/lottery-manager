@@ -292,11 +292,6 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			chooseAndPrintSelectedSystems(processingContext, config);
 		}
 		printData(processingContext.record, false);
-		LogUtils.INSTANCE.info(
-			MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
-			MathUtils.INSTANCE.format(processingContext.comboHandler.getSize()) +
-			" systems processed\n"
-		);
 		printBlocksInfo(processingContext);
 	}
 
