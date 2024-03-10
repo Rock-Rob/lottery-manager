@@ -842,7 +842,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		LogUtils.INSTANCE.info(
 			MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
 			processingContext.sizeOfIntegralSystemMatrixAsString + " systems analyzed; " +
-			MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " blocks processed and " +
+			MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " blocks completed and " +
 			MathUtils.INSTANCE.format(startedBlockCounter(processingContext.record)) + " blocks started of " +
 			MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " blocks"
 		);
