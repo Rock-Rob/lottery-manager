@@ -69,6 +69,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 	private static List<Function<String, Record>> recordLoaders;
 	private static List<Function<String, Consumer<Record>>> recordWriters;
 	private static List<Function<String, Consumer<Record>>> localRecordWriters;
+	private static boolean timeoutReached;
 
 	static {
 		recordWriters = new ArrayList<>();
@@ -135,8 +136,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 
 					}
 				}
-				LogUtils.INSTANCE.info("Timeout reached");
-				System.exit(0);
+				LogUtils.INSTANCE.warn("Timeout reached");
+				timeoutReached = true;
+				//System.exit(0);
 			});
 			exiter.setDaemon(true);
 			exiter.start();
@@ -361,9 +363,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 	protected static void analyze(Properties config) {
 		ProcessingContext processingContext = new ProcessingContext(config);
 		boolean printBlocks = CollectionUtils.INSTANCE.retrieveBoolean(config, "log.print.blocks", "true");
-		while (!processingContext.assignedBlocks.isEmpty()) {
+		while (!processingContext.assignedBlocks.isEmpty() && !timeoutReached) {
 			Iterator<Block> blockIterator = processingContext.assignedBlocks.iterator();
-			while (blockIterator.hasNext()) {
+			while (blockIterator.hasNext() && !timeoutReached) {
 				Block currentBlock = blockIterator.next();
 				if (currentBlock.indexes == null) {
 					currentBlock.indexes = processingContext.comboHandler.computeIndexes(currentBlock.start);
@@ -408,7 +410,8 @@ public class SEIntegralSystemAnalyzer extends Shared {
 							tryToAddCombo(processingContext, combo, allPremiums);
 						}
 						if (iterationData.getCounter().mod(processingContext.modderForAutoSave).compareTo(BigInteger.ZERO) == 0 ||
-							iterationData.getCounter().compareTo(currentBlock.end) == 0) {
+							iterationData.getCounter().compareTo(currentBlock.end) == 0
+							|| timeoutReached) {
 							currentBlock.indexes = iterationData.copyOfIndexes(); //Ottimizzazione: in caso di anomalie eliminare questa riga e decommentare la riga più in alto (vedere commento)
 							mergeAndStore(
 								processingContext.cacheKey,
@@ -422,11 +425,14 @@ public class SEIntegralSystemAnalyzer extends Shared {
 								printBlocks
 							);
 							printBlocksInfo(processingContext);
+							if (timeoutReached) {
+								iterationData.terminateIteration();
+							}
 			    		}
 					}
 				);
 			}
-			if (processingContext.assignedBlocks.isEmpty()) {
+			if (processingContext.assignedBlocks.isEmpty() && !timeoutReached) {
 				processingContext.assignedBlocks.addAll(retrieveAssignedBlocks(config, processingContext.record));
 			}
 		}
