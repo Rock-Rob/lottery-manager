@@ -1136,7 +1136,7 @@ public class SEStats {
 		public boolean store() throws Throwable {
 			DocumentSnapshot document = FirestoreWrapper.get().load(getPath());
 			Date endDate = document.getDate("endDate");
-			if (endDate == null) {
+			if (endDate == null || endDate.compareTo(sEStats.endDate) < 0) {
 				Map<String, Object> recordAsRawValue = new LinkedHashMap<>();
 				recordAsRawValue.put("startDate", sEStats.startDate);
 				recordAsRawValue.put("endDate", sEStats.endDate);
