@@ -941,6 +941,9 @@ public class SEStats {
 			if (endDateFromDB == null) {
 				return false;
 			}
+			if (endDateFromDB.compareTo(this.endDate) < 0) {
+				return false;
+			}
 			allWinningCombos.putAll(
 				(Map<Date, List<Integer>>)IOUtils.INSTANCE.serializeAndDecode(documentSnapshot.getString("allWinningCombos"))
 			);
