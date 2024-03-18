@@ -108,9 +108,13 @@ public class FirestoreWrapper {
 	}
 
 	public static void shutdownDefaultInstance() {
-		FirestoreWrapper firestoreWrapper = FirestoreWrapper.get();
-		if (firestoreWrapper != null) {
-			firestoreWrapper.shutdown();
+		if (DEFAULT_INSTANCE != null) {
+			synchronized(FirestoreWrapper.class) {
+				if (DEFAULT_INSTANCE != null) {
+					DEFAULT_INSTANCE.shutdown();
+					DEFAULT_INSTANCE = null;
+				}
+			}
 		}
 	}
 
