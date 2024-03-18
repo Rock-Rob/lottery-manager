@@ -101,5 +101,18 @@ public class FirestoreWrapper {
 		}
 	}
 
+	public void shutdown() {
+		if (firestoreClient != null) {
+			firestoreClient.shutdown();
+		}
+	}
+
+	public static void shutdownDefaultInstance() {
+		FirestoreWrapper firestoreWrapper = FirestoreWrapper.get();
+		if (firestoreWrapper != null) {
+			firestoreWrapper.shutdown();
+		}
+	}
+
 
 }

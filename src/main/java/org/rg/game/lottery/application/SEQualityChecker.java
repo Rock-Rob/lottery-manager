@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.lottery.engine.PersistentStorage;
 import org.rg.game.lottery.engine.Storage;
@@ -19,6 +20,7 @@ public class SEQualityChecker extends Shared {
 		check(
 			systemToBeChecked
 		);
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	private static void check(Map<String, Boolean> dateInfos) throws IOException {

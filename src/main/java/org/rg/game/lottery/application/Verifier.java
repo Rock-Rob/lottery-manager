@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.MathUtils;
 import org.rg.game.core.TimeUtils;
@@ -44,6 +45,7 @@ public class Verifier {
 				.map(Integer::valueOf).collect(Collectors.toList())
 			: null;
 		check(System.getenv().get("competitionName"), null, winningNumbers);
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	private static void check(String competionName, String extractionDate, List<Integer> winningComboWithJollyAndSuperstar) throws IOException {

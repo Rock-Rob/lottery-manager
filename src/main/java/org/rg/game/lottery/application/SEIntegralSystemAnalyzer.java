@@ -196,7 +196,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		}
 		futures.forEach(CompletableFuture::join);
 		LogUtils.INSTANCE.warn("All activities are finished");
-
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 
@@ -540,7 +540,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			log.append(
 				"La combinazione scelta per il concorso " + seedData.getValue() + " del " +
 				TimeUtils.defaultLocalDateFormat.format(nextExtractionDate) + " è:\n\t" + ComboHandler.toString(combo.getKey(), ", ") +
-				"\nposizionata al " + nextLong + "° posto. Il relativo sistema integrale è composto da " + selectedCombosData.size() + " combinazioni:"
+				"\nposizionata al " + nextLong + "° posto. Il relativo sistema è composto da " + selectedCombosData.size() + " combinazioni:"
 			);
 			for (String cmbData : selectedCombosData) {
 				log.append("\t" + cmbData + "\n");
@@ -609,7 +609,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				for (List<Integer> selectedIntegralSystem : selectedIntegralSystemsFlat) {
 					new ComboHandler(selectedIntegralSystem, 6).iterate(premiumFilter);
 				}
-				log.append("Il relativo sistema integrale è composto da " + selectedCombosData.size() + " combinazioni:\n");
+				log.append("Il relativo sistema è composto da " + selectedCombosData.size() + " combinazioni:\n");
 				for (String cmbData : selectedCombosData) {
 					log.append("\t" + cmbData + "\n");
 				}

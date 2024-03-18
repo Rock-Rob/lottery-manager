@@ -24,6 +24,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.MathUtils;
 import org.rg.game.core.TimeUtils;
@@ -195,6 +196,7 @@ public class SubscriptionExpirationDateUpdater extends Shared {
 		} catch (Throwable exc) {
 			LogUtils.INSTANCE.error(exc);
 		}
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	protected static boolean shouldCheckIfToday(LocalDate expiryLocalDate) {

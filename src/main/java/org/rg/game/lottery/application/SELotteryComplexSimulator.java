@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.burningwave.Throwables;
 import org.rg.game.core.CollectionUtils;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.ResourceUtils;
 import org.rg.game.core.TimeUtils;
@@ -36,6 +37,7 @@ public class SELotteryComplexSimulator extends SELotterySimpleSimulator {
 		Collection<CompletableFuture<Void>> futures = new CopyOnWriteArrayList<>();
 		executeRecursive(SELotteryComplexSimulator::execute, futures);
 		LogUtils.INSTANCE.warn("All activities are finished");
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	protected static Collection<CompletableFuture<Void>> execute(

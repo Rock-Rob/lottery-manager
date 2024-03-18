@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.TimeUtils;
 import org.rg.game.lottery.engine.SELotteryMatrixGeneratorEngine;
@@ -34,6 +35,7 @@ public class SEQualityCheckerForExcel extends Shared {
 				true
 			)
 		);
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	static List<Map.Entry<LocalDate, Object>> forDate(

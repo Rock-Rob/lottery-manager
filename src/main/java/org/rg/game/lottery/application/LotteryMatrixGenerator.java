@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import org.rg.game.core.CollectionUtils;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.ResourceUtils;
 import org.rg.game.lottery.engine.LotteryMatrixGeneratorAbstEngine;
@@ -26,6 +27,7 @@ public class LotteryMatrixGenerator extends Shared {
 		execute("se", futures);
 		execute("md", futures);
 		futures.stream().forEach(CompletableFuture::join);
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	private static <L extends LotteryMatrixGeneratorAbstEngine> void execute(

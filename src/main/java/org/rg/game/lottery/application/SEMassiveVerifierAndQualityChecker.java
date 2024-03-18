@@ -34,6 +34,7 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.MathUtils;
 import org.rg.game.core.ResourceUtils;
@@ -56,6 +57,7 @@ public class SEMassiveVerifierAndQualityChecker extends Shared {
 				false
 			)
 		);
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	static List<Map.Entry<LocalDate, Object>> forDate(

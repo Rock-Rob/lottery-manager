@@ -30,6 +30,7 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.ResourceUtils;
 import org.rg.game.core.TimeUtils;
@@ -118,6 +119,7 @@ public class SESimulationSummaryGenerator extends Shared {
 			LogUtils.INSTANCE.error("\n\nUnable to generate summary file");
 			LogUtils.INSTANCE.error(exc);
 		}
+		FirestoreWrapper.shutdownDefaultInstance();
 	}
 
 	protected static void process(

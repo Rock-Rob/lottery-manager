@@ -74,6 +74,7 @@ import org.burningwave.Throwables;
 import org.burningwave.ThrowingConsumer;
 import org.rg.game.core.CollectionUtils;
 import org.rg.game.core.ConcurrentUtils;
+import org.rg.game.core.FirestoreWrapper;
 import org.rg.game.core.IOUtils;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.NetworkUtils;
@@ -125,6 +126,14 @@ public class SELotterySimpleSimulator extends Shared {
 	static final SEStats allTimeStats;
 	static final List<List<String>> header;
 
+	public static void main(String[] args) throws IOException {
+		Collection<CompletableFuture<Void>> futures = new CopyOnWriteArrayList<>();
+		executeRecursive(SELotterySimpleSimulator::execute, futures);
+		LogUtils.INSTANCE.warn("All activities are finished");
+		FirestoreWrapper.shutdownDefaultInstance();
+	}
+
+
 	static final Comparator<Row> rowsForDateComparator = (rowOne, rowTwo) -> {
 		return rowOne.getCell(getCellIndex(rowOne.getSheet(), EXTRACTION_DATE_LABEL)).getDateCellValue().compareTo(
 			rowTwo.getCell(getCellIndex(rowTwo.getSheet(), EXTRACTION_DATE_LABEL)).getDateCellValue()
@@ -175,12 +184,6 @@ public class SELotterySimpleSimulator extends Shared {
 		}
 		summaryFormulas.add("");
 		summaryFormulas.add("");
-	}
-
-	public static void main(String[] args) throws IOException {
-		Collection<CompletableFuture<Void>> futures = new CopyOnWriteArrayList<>();
-		executeRecursive(SELotterySimpleSimulator::execute, futures);
-		LogUtils.INSTANCE.warn("All activities are finished");
 	}
 
 	protected static void executeRecursive(
