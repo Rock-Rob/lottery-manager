@@ -845,12 +845,15 @@ public class SEIntegralSystemAnalyzer extends Shared {
 
 
 	protected static void printBlocksInfo(ProcessingContext processingContext) {
+		BigInteger startedBlockCounter = startedBlockCounter(processingContext.record);
 		LogUtils.INSTANCE.info(
 			MathUtils.INSTANCE.format(processedSystemsCounter(processingContext.record)) + " of " +
 			processingContext.sizeOfIntegralSystemMatrixAsString + " systems analyzed; " +
-			MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " blocks completed and " +
-			MathUtils.INSTANCE.format(startedBlockCounter(processingContext.record)) + " blocks started of " +
-			MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " blocks"
+			MathUtils.INSTANCE.format(processedBlockCounter(processingContext.record)) + " blocks completed " +
+			(startedBlockCounter.compareTo(BigInteger.ZERO) > 0 ?
+				"and " + MathUtils.INSTANCE.format(startedBlockCounter) + " blocks started " :
+				"") + "out of " +
+			MathUtils.INSTANCE.format(processingContext.record.blocks.size()) + " total blocks"
 		);
 	}
 
