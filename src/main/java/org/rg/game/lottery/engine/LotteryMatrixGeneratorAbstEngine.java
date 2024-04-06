@@ -88,7 +88,7 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 		}
 		processingContext.comboIndexSelectorType = config.getProperty("combination.selector", "random");
 		String combinationFilterRaw = config.getProperty("combination.filter");
-		String numbersProcessorConfigPrefix = Optional.of(
+		String numbersProcessorConfigPrefix = Optional.ofNullable(
 			config.getProperty("numbers-processor.config.prefix")
 		).map(value -> value + ".").orElseGet(() -> "");
 		processingContext.basicDataSupplier = extractionDate -> {
