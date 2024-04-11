@@ -76,12 +76,15 @@ public class SEStats {
 	public static final List<Integer> NUMBERS = IntStream.range(1, 91).boxed().collect(Collectors.toList());
 
 	private static boolean forceLoadingFromExcel;
+	private static boolean loadingFromFirebaseEnabled;
 
 	public final static List<DayOfWeek> EXTRACTION_DAYS;
 
 	static {
 		SEStats.forceLoadingFromExcel =
 				Boolean.parseBoolean(System.getenv().getOrDefault("se-stats.force-loading-from-excel", "false"));
+		SEStats.loadingFromFirebaseEnabled =
+				Boolean.parseBoolean(System.getenv().getOrDefault("se-stats.loading-from-firebase-enabled", "true")) && FirestoreWrapper.get() != null;
 		CACHE = new LinkedHashMap<>();
 		CACHE_MAX_SIZE = Optional.ofNullable(System.getenv("se-stats.cache.max-size")).map(Integer::parseInt).orElseGet(() -> 100);
 		EXTRACTION_DAYS = Stream.of(System.getenv().getOrDefault("se-stats.extraction-days", "TUESDAY,THURSDAY,SATURDAY")
@@ -161,7 +164,7 @@ public class SEStats {
 		this.allWinningCombosWithJollyAndSuperstar = new TreeMap<>(TimeUtils.reversedDateComparator);
 		Collection<DataLoader> dataLoaders = new ArrayList<>();
 		dataLoaders.add(new FromGlobalSEStatsDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar));
-		if (FirestoreWrapper.get() != null) {
+		if (loadingFromFirebaseEnabled) {
 			dataLoaders.add(new FromFirebaseSEStatsDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar));
 		}
 		dataLoaders.add(new InternetDataLoader(this.startDate, this.endDate, allWinningCombos, allWinningCombosWithJollyAndSuperstar));
