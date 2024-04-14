@@ -137,7 +137,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		Integer indexModeFinal = indexMode;
 		for (Properties config : ResourceUtils.INSTANCE.toOrderedProperties(configurationFiles)) {
 			config.setProperty("numbers-processor.config.prefix", "choice-of-systems");
-			String[] enabledRawValues = config.getProperty("enabled", "false").split(";");
+			String[] enabledRawValues = CollectionUtils.INSTANCE.retrieveValue(
+				config, "enabled", "false"
+			).split(";");
 			boolean enabled = false;
 			for (String enabledRawValue : enabledRawValues) {
 				if (enabledRawValue.equals("true")) {
@@ -488,7 +490,9 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		LocalDate nextExtractionDate = SELotteryMatrixGeneratorEngine.DEFAULT_INSTANCE.computeNextExtractionDate(LocalDate.now(), false);
 		int rankSize = ProcessingContext.getRankSize(config);
 		Map.Entry<LocalDate, Long> seedData = getSEAllStats().getSeedData(nextExtractionDate);
-		Number premium = Premium.parseType(config.getProperty("choice-of-systems.filter", "0"));
+		Number premium = Premium.parseType(
+			CollectionUtils.INSTANCE.retrieveValue(config, "choice-of-systems.filter", "0")
+		);
 		List<String> selectedCombosData = new ArrayList<>();
 		Consumer<IterationData> premiumFilter = iterationData -> {
 			List<Integer> cmb = iterationData.getCombo();
@@ -542,7 +546,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				});
 				ComboHandler rankAsComboHandler = new ComboHandler(
 					IntStream.range(0, rankSize).boxed().collect(Collectors.toList()),
-					Integer.valueOf(config.getProperty("choice-of-systems.size"))
+					CollectionUtils.INSTANCE.retrieveInteger(config, "choice-of-systems.size")
 				).iterate(iterationData -> {
 					Set<Integer> allComboNumbers = new LinkedHashSet<>();
 					for (Integer index : iterationData.getCombo()) {
@@ -689,7 +693,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 
 
 	protected static List<Block> retrieveAssignedBlocks(Properties config, Record cacheRecordTemp) {
-		String blockAssignees = config.getProperty("blocks.assegnee");
+		String blockAssignees = CollectionUtils.INSTANCE.retrieveValue(config, "blocks.assegnee");
 		Collection<Block> blocks = new LinkedHashSet<>();
 		boolean random = false;
 		if (blockAssignees != null) {
@@ -1089,7 +1093,8 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		private String sizeOfIntegralSystemMatrixAsString;
 
 		private ProcessingContext(Properties config) {
-			premiumsToBeAnalyzed = config.getProperty(
+			premiumsToBeAnalyzed = CollectionUtils.INSTANCE.retrieveValue(
+				config,
 				"rank.premiums",
 				String.join(",", Premium.allTypesListReversed().stream().map(Object::toString).collect(Collectors.toList()))
 			).replaceAll("\\s+","");
@@ -1097,7 +1102,10 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				Arrays.asList(
 					premiumsToBeAnalyzed.split(",")
 				).stream().map(Premium::parseType).toArray(Number[]::new);
-			long combinationSize = Long.valueOf(config.getProperty("combination.components"));
+			long combinationSize = CollectionUtils.INSTANCE.retrieveLong(
+				config,
+				"combination.components"
+			);
 			comboHandler = new ComboHandler(SEStats.NUMBERS, combinationSize);
 			modderForSkipLog = BigInteger.valueOf(1_000_000_000);
 			modderForAutoSave = new BigInteger(
@@ -1109,8 +1117,8 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			);
 			rankSize = getRankSize(config);
 			SEStats sEStats = SEStats.get(
-				config.getProperty("competition.archive.start-date"),
-				config.getProperty("competition.archive.end-date")
+				CollectionUtils.INSTANCE.retrieveValue(config, "competition.archive.start-date"),
+				CollectionUtils.INSTANCE.retrieveValue(config, "competition.archive.end-date")
 			);
 			allWinningCombosWithJollyAndSuperstar = sEStats.getAllWinningCombosWithJollyAndSuperstar().values();
 			LogUtils.INSTANCE.info("All " + combinationSize + " based integral systems size (" + comboHandler.getNumbers().size() + " numbers): " +  MathUtils.INSTANCE.format(comboHandler.getSize()));
@@ -1128,7 +1136,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		}
 
 		protected static Integer getRankSize(Properties config) {
-			return Integer.valueOf(config.getProperty("rank.size", "100"));
+			return CollectionUtils.INSTANCE.retrieveInteger(config, "rank.size", 100);
 		}
 	}
 

@@ -79,6 +79,10 @@ public class CollectionUtils {
 		);
 	}
 
+	public String retrieveValue(Properties config, String key) {
+		return retrieveValue(config, key, null);
+	}
+
 	public String retrieveValue(Properties config, String key, String defaultValue) {
 		String altKey = key.toUpperCase().replace(".", "_").replace("-", "_");
 		return config != null ?
