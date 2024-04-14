@@ -49,7 +49,7 @@ public class LotteryMatrixGenerator extends Shared {
 			);
 		List<Properties> configurations = new ArrayList<>();
 		for (Properties config : ResourceUtils.INSTANCE.toOrderedProperties(configurationFiles)) {
-			if (CollectionUtils.INSTANCE.retrieveBoolean(config, "enabled", "false")) {
+			if (CollectionUtils.INSTANCE.retrieveBoolean(config, "enabled", false)) {
 				configurations.add(config);
 			}
 		}
@@ -74,7 +74,7 @@ public class LotteryMatrixGenerator extends Shared {
 		configuration.setProperty("nameSuffix", configuration.getProperty("file.name")
 			.replace("." + configuration.getProperty("file.extension"), ""));
 		ProcessingContext pC = engine.setup(configuration, true);
-		if (CollectionUtils.INSTANCE.retrieveBoolean(configuration, "async", "false")) {
+		if (CollectionUtils.INSTANCE.retrieveBoolean(configuration, "async", false)) {
 			futures.add(CompletableFuture.runAsync(() -> pC.getExecutor().apply(null).apply(null)));
 		} else {
 			pC.getExecutor().apply(null).apply(null);

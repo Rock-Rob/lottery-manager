@@ -26,12 +26,77 @@ public class CollectionUtils {
 		return arrayCopy;
 	}
 
-	public boolean retrieveBoolean(Properties config, String key) {
+	public Boolean retrieveBoolean(Properties config, String key) {
 		return retrieveBoolean(config, key, null);
 	}
 
-	public boolean retrieveBoolean(Properties config, String key, String defaultValue) {
-		return Boolean.parseBoolean((defaultValue != null ? config.getProperty(key, defaultValue) : config.getProperty(key)).toLowerCase().replaceAll("\\s+",""));
+	public Boolean retrieveBoolean(Properties config, String key, Boolean defaultValue) {
+		String value = retrieveValue(config, key, defaultValue != null ? defaultValue.toString() : null);
+		return value != null ?
+			Boolean.parseBoolean(
+				value.toLowerCase().replaceAll("\\s+","")
+			) : null;
+	}
+
+	public Integer retrieveInteger(Properties config, String key) {
+		return retrieveInteger(config, key, null);
+	}
+
+	public Integer retrieveInteger(Properties config, String key, Integer defaultValue) {
+		String value = retrieveValue(config, key, defaultValue != null ? defaultValue.toString() : null);
+		return value != null ?
+			Integer.parseInt(
+				value.toLowerCase().replaceAll("\\s+","")
+			) : null;
+	}
+
+	public Long retrieveLong(Properties config, String key) {
+		return retrieveLong(config, key, null);
+	}
+
+	public Long retrieveLong(Properties config, String key, Long defaultValue) {
+		String value = retrieveValue(config, key, defaultValue != null ? defaultValue.toString() : null);
+		return value != null ?
+			Long.parseLong(
+				value.toLowerCase().replaceAll("\\s+","")
+			) : null;
+	}
+
+	public String retrieveValue(Properties config, String key, String defaultValue) {
+		String altKey = key.toUpperCase().replace(".", "_").replace("-", "_");
+		return config != null ?
+			config.getProperty(
+				key,
+				config.getProperty(
+					altKey,
+					System.getProperty(//-D command line parameters
+						key,
+						System.getProperty(//-D command line parameters
+							altKey,
+							System.getenv().getOrDefault(
+								key,
+								System.getenv().getOrDefault(
+									altKey,
+									defaultValue
+								)
+							)
+						)
+					)
+				)
+			) :
+			System.getProperty(
+				key,
+				System.getProperty(//-D command line parameters
+					altKey,
+					System.getenv().getOrDefault(//-D command line parameters
+						key,
+						System.getenv().getOrDefault(
+							altKey,
+							defaultValue
+						)
+					)
+				)
+			);
 	}
 
 	public <T> T getLastElement(final Iterable<T> elements) {

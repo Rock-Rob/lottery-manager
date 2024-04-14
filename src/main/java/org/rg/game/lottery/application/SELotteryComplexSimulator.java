@@ -77,7 +77,7 @@ public class SELotteryComplexSimulator extends SELotterySimpleSimulator {
 							Iterator<File> simpleConfigFileIterator = simpleConfigurationFiles.iterator();
 							while (simpleConfigFileIterator.hasNext()) {
 								Properties simpleConfig = ResourceUtils.INSTANCE.toProperties(simpleConfigFileIterator.next());
-								if (childrenSimulationsFilter.equals("allEnabledInSameFolder") && !CollectionUtils.INSTANCE.retrieveBoolean(simpleConfig, "simulation.enabled", "false")) {
+								if (childrenSimulationsFilter.equals("allEnabledInSameFolder") && !CollectionUtils.INSTANCE.retrieveBoolean(simpleConfig, "simulation.enabled", false)) {
 									simpleConfigFileIterator.remove();
 								} else if (childrenSimulationsFilter.equals("allInSameFolder")) {
 									simpleConfig.setProperty("simulation.enabled", "true");

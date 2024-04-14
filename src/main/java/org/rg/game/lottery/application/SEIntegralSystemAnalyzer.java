@@ -18,7 +18,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.PrimitiveIterator.OfLong;
 import java.util.Properties;
 import java.util.Random;
@@ -101,31 +100,19 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				"se-integral-systems-analysis", "properties",
 				configurationFileFolders
 			);
-		String taskMaxParallel = Optional.ofNullable(System.getenv().get("tasks.max-parallel")).orElseGet(() -> System.getenv().get("TASKS_MAX_PARALLEL"));
-		int maxParallelTasks = Optional.ofNullable(taskMaxParallel).map(Integer::valueOf)
-				.orElseGet(() -> Math.max((Runtime.getRuntime().availableProcessors() / 2) - 1, 1));
+		int maxParallelTasks = CollectionUtils.INSTANCE.retrieveInteger(
+			null,
+			"tasks.max-parallel",
+			Math.max((Runtime.getRuntime().availableProcessors() / 2) - 1, 1)
+		);
 		Collection<CompletableFuture<Void>> futures = new CopyOnWriteArrayList<>();
-		boolean onlyShowComputed = false;
-		String timeoutRawValue = null;
-		String indexRawValue = null;
-		for (String arg : args) {
-			if (arg != null) {
-				if (arg.contains("onlyShowComputed")) {
-					onlyShowComputed = true;
-					LogUtils.INSTANCE.info("Analysis disabled");
-				} else if (arg.contains("timeout")) {
-					timeoutRawValue = arg.split("=")[1];
-				} else if (arg.contains("index.mode")) {
-					indexRawValue = arg.split("=")[1];
-				}
-			}
+		boolean onlyShowComputed = CollectionUtils.INSTANCE.retrieveBoolean(null, "onlyShowComputed", false);
+		if (onlyShowComputed) {
+			LogUtils.INSTANCE.info("Analysis disabled");
 		}
-		if (timeoutRawValue == null) {
-			timeoutRawValue = System.getenv().getOrDefault("timeout", System.getenv().get("TIMEOUT"));
-		}
-		if (timeoutRawValue != null && !timeoutRawValue.trim().isEmpty()) {
-			LogUtils.INSTANCE.info("Set timeout to " + timeoutRawValue + " seconds");
-			long timeout = Long.valueOf(timeoutRawValue);
+		Long timeout = CollectionUtils.INSTANCE.retrieveLong(null, "timeout");
+		if (timeout != null) {
+			LogUtils.INSTANCE.info("Set timeout to " + timeout + " seconds");
 			Thread exiter = new Thread(() -> {
 				long elapsedTimeFromStart = System.currentTimeMillis() - startTime;
 				long effectiveTimeout = (timeout * 1000) - elapsedTimeFromStart;
@@ -143,12 +130,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			exiter.setDaemon(true);
 			exiter.start();
 		}
-		Integer indexMode = null;
-		if (indexRawValue == null) {
-			indexRawValue = Optional.ofNullable(System.getenv().get("index.mode"))
-					.orElseGet(() -> System.getenv().get("INDEX_MODE"));
-			indexMode = indexRawValue != null? Integer.valueOf(indexRawValue) : null;
-		}
+		Integer indexMode = CollectionUtils.INSTANCE.retrieveInteger(null, "index.mode");
 		if (indexMode != null) {
 			LogUtils.INSTANCE.info("Indexing mode: " + indexMode);
 		}
@@ -181,10 +163,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				if (!onlyShowComputed && CollectionUtils.INSTANCE.retrieveBoolean(
 						config,
 						"async",
-						System.getenv().getOrDefault(
-							"INTEGRAL_SYSTEM_ANALYSIS_ASYNC",
-							"false"
-						)
+						false
 					)
 				) {
 					ConcurrentUtils.INSTANCE.addTask(futures, task);
@@ -362,7 +341,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 
 	protected static void analyze(Properties config) {
 		ProcessingContext processingContext = new ProcessingContext(config);
-		boolean printBlocks = CollectionUtils.INSTANCE.retrieveBoolean(config, "log.print.blocks", "true");
+		boolean printBlocks = CollectionUtils.INSTANCE.retrieveBoolean(config, "log.print.blocks", true);
 		while (!processingContext.assignedBlocks.isEmpty() && !timeoutReached) {
 			Iterator<Block> blockIterator = processingContext.assignedBlocks.iterator();
 			while (blockIterator.hasNext() && !timeoutReached) {
@@ -523,7 +502,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 				selectedCombosData.add(ComboHandler.toString(cmb) + ": " + Premium.toString(premiums, "=", ", "));
 			}
 		};
-		if (CollectionUtils.INSTANCE.retrieveBoolean(config, "choice-of-systems.random", "true")) {
+		if (CollectionUtils.INSTANCE.retrieveBoolean(config, "choice-of-systems.random", true)) {
 			seedData.getValue();
 			Long size = cacheRecord.blocks.stream().reduce((first, second) -> second)
 			  .orElse(null).end.longValue();
@@ -681,13 +660,12 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		}
 		if (cacheRecordTemp.blocks == null) {
 			BigInteger blockSize = computeBlockSize(cH);
-			ComboHandler cHForComputationOfMaxBlockSize = new ComboHandler(SEStats.NUMBERS, 9L);
 			cacheRecordTemp.blocks =
 				divide(
 					cH.getSize(),
 					Math.min(
 						cH.getSize().divide(blockSize).longValue(),
-						cHForComputationOfMaxBlockSize.getSize().divide(blockSize).longValue()
+						new ComboHandler(SEStats.NUMBERS, 9L).getSize().divide(blockSize).longValue()
 					)
 				);
 		}
@@ -1123,12 +1101,10 @@ public class SEIntegralSystemAnalyzer extends Shared {
 			comboHandler = new ComboHandler(SEStats.NUMBERS, combinationSize);
 			modderForSkipLog = BigInteger.valueOf(1_000_000_000);
 			modderForAutoSave = new BigInteger(
-				config.getProperty(
+				CollectionUtils.INSTANCE.retrieveValue(
+					config,
 					"autosave-every",
-					System.getenv().getOrDefault(
-						"INTEGRAL_SYSTEM_ANALYSIS_AUTOSAVE_EVERY",
-						"1000000"
-					)
+					"1000000"
 				)
 			);
 			rankSize = getRankSize(config);
