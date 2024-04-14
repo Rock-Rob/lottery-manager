@@ -62,6 +62,23 @@ public class CollectionUtils {
 			) : null;
 	}
 
+	public String retrieveValue(String key, String defaultValue) {
+		String altKey = key.toUpperCase().replace(".", "_").replace("-", "_");
+		return System.getProperty(
+			key,
+			System.getProperty(//-D command line parameters
+				altKey,
+				System.getenv().getOrDefault(//-D command line parameters
+					key,
+					System.getenv().getOrDefault(
+						altKey,
+						defaultValue
+					)
+				)
+			)
+		);
+	}
+
 	public String retrieveValue(Properties config, String key, String defaultValue) {
 		String altKey = key.toUpperCase().replace(".", "_").replace("-", "_");
 		return config != null ?
@@ -69,34 +86,10 @@ public class CollectionUtils {
 				key,
 				config.getProperty(
 					altKey,
-					System.getProperty(//-D command line parameters
-						key,
-						System.getProperty(//-D command line parameters
-							altKey,
-							System.getenv().getOrDefault(
-								key,
-								System.getenv().getOrDefault(
-									altKey,
-									defaultValue
-								)
-							)
-						)
-					)
+					retrieveValue(key, defaultValue)
 				)
 			) :
-			System.getProperty(
-				key,
-				System.getProperty(//-D command line parameters
-					altKey,
-					System.getenv().getOrDefault(//-D command line parameters
-						key,
-						System.getenv().getOrDefault(
-							altKey,
-							defaultValue
-						)
-					)
-				)
-			);
+			retrieveValue(key, defaultValue);
 	}
 
 	public <T> T getLastElement(final Iterable<T> elements) {
