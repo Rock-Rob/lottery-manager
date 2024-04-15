@@ -67,10 +67,10 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 		ProcessingContext processingContext = this.processingContext = newProcessingContext();
 		setupCombinationFilterPreProcessor();
 		processingContext.comboSequencedIndexSelectorCounter = new AtomicInteger(0);
-		processingContext.extractionArchiveStartDate = config.getProperty("competition.archive.start-date");
-		processingContext.extractionArchiveForSeedStartDate = config.getProperty("seed-data.start-date");
-		processingContext.seedShifter = Integer.valueOf(config.getProperty("seed-data.seed-shift", "0"));
-		String extractionDatesAsString = config.getProperty("competition");
+		processingContext.extractionArchiveStartDate = CollectionUtils.INSTANCE.retrieveValue(config,"competition.archive.start-date");
+		processingContext.extractionArchiveForSeedStartDate = CollectionUtils.INSTANCE.retrieveValue(config,"seed-data.start-date");
+		processingContext.seedShifter = Integer.valueOf(CollectionUtils.INSTANCE.retrieveValue(config,"seed-data.seed-shift", "0"));
+		String extractionDatesAsString = CollectionUtils.INSTANCE.retrieveValue(config,"competition");
 		Collection<LocalDate> extractionDates = computeExtractionDates(extractionDatesAsString);
 		/*LogUtils.INSTANCE.info(
 			"Computing for the following extraction dates:\n\t"+
@@ -78,18 +78,18 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 				extractionDates.stream().map(TimeUtils.defaultLocalDateFormat::format).collect(Collectors.toList())
 			)
 		);*/
-		processingContext.storageType = config.getProperty("storage", "memory").replaceAll("\\s+","");
-		String combinationCountConfigValue = config.getProperty("combination.count");
+		processingContext.storageType = CollectionUtils.INSTANCE.retrieveValue(config,"storage", "memory").replaceAll("\\s+","");
+		String combinationCountConfigValue = CollectionUtils.INSTANCE.retrieveValue(config,"combination.count");
 		if (combinationCountConfigValue != null && combinationCountConfigValue.replaceAll("\\s+","").equalsIgnoreCase("integral")) {
 			config.remove("combination.filter");
 			config.setProperty("combination.equilibrate", "false");
 			config.setProperty("combination.selector", "sequence");
 			config.setProperty("combination.count", combinationCountConfigValue = "-1");
 		}
-		processingContext.comboIndexSelectorType = config.getProperty("combination.selector", "random");
-		String combinationFilterRaw = config.getProperty("combination.filter");
+		processingContext.comboIndexSelectorType = CollectionUtils.INSTANCE.retrieveValue(config,"combination.selector", "random");
+		String combinationFilterRaw = CollectionUtils.INSTANCE.retrieveValue(config,"combination.filter");
 		String numbersProcessorConfigPrefix = Optional.ofNullable(
-			config.getProperty("numbers-processor.config.prefix")
+			CollectionUtils.INSTANCE.retrieveValue(config,"numbers-processor.config.prefix")
 		).map(value -> value + ".").orElseGet(() -> "");
 		processingContext.basicDataSupplier = extractionDate -> {
 			if (processingContext.combinationFilter == null) {
@@ -103,7 +103,7 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 			);
 			List<Integer> chosenNumbers = numberProcessor.retrieveNumbersToBePlayed(
 				numberProcessorContext,
-				config.getProperty(numbersProcessorConfigPrefix + "numbers", getDefaultNumberRange()),
+				CollectionUtils.INSTANCE.retrieveValue(config,numbersProcessorConfigPrefix + "numbers", getDefaultNumberRange()),
 				extractionDate,
 				CollectionUtils.INSTANCE.retrieveBoolean(
 					config, numbersProcessorConfigPrefix + "numbers.ordered", false
@@ -115,7 +115,7 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 				"numbersToBeDiscarded",
 				numberProcessor.retrieveNumbersToBeExcluded(
 					numberProcessorContext,
-					config.getProperty(numbersProcessorConfigPrefix + "numbers.discard"),
+					CollectionUtils.INSTANCE.retrieveValue(config,numbersProcessorConfigPrefix + "numbers.discard"),
 					extractionDate,
 					numbersToBePlayed,
 					CollectionUtils.INSTANCE.retrieveBoolean(config, numbersProcessorConfigPrefix + "numbers.ordered", false)
@@ -152,45 +152,45 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 			"report.detail.enabled",
 			false
 		);
-		String group = config.getProperty("group") != null ?
-			config.getProperty("group").replace("${localhost.name}", NetworkUtils.INSTANCE.thisHostName()):
+		String group = CollectionUtils.INSTANCE.retrieveValue(config,"group") != null ?
+			CollectionUtils.INSTANCE.retrieveValue(config,"group").replace("${localhost.name}", NetworkUtils.INSTANCE.thisHostName()):
 			null;
 		processingContext.combinationFilterRaw = combinationFilterRaw;
 		processingContext.testFilter = CollectionUtils.INSTANCE.retrieveBoolean(config, "combination.filter.test", true);
 		processingContext.testFilterFineInfo = CollectionUtils.INSTANCE.retrieveBoolean(config, "combination.filter.test.fine-info", true);
-		processingContext.combinationComponents = Integer.valueOf(config.getProperty("combination.components"));
-		processingContext.occurrencesNumberRequested = Optional.ofNullable(config.getProperty("numbers.occurrences")).map(Double::parseDouble).orElseGet(() -> null);
+		processingContext.combinationComponents = Integer.valueOf(CollectionUtils.INSTANCE.retrieveValue(config,"combination.components"));
+		processingContext.occurrencesNumberRequested = Optional.ofNullable(CollectionUtils.INSTANCE.retrieveValue(config,"numbers.occurrences")).map(Double::parseDouble).orElseGet(() -> null);
 		processingContext.numberOfCombosRequested = Optional.ofNullable(combinationCountConfigValue)
 			.filter(value -> !value.replaceAll("\\s+","").isEmpty()).map(Integer::parseInt).orElseGet(() -> null);
-		processingContext.chooseRandom = Integer.valueOf(config.getProperty("combination.choose-random.count", "0"));
+		processingContext.chooseRandom = Integer.valueOf(CollectionUtils.INSTANCE.retrieveValue(config,"combination.choose-random.count", "0"));
 		processingContext.equilibrateFlagSupplier = () -> {
-			String equilibrateCombinations = config.getProperty("combination.equilibrate");
+			String equilibrateCombinations = CollectionUtils.INSTANCE.retrieveValue(config,"combination.equilibrate");
 			if (equilibrateCombinations != null && !equilibrateCombinations.isEmpty() && !equilibrateCombinations.replaceAll("\\s+","").equalsIgnoreCase("random")) {
 				return Boolean.parseBoolean(equilibrateCombinations);
 			}
 			return processingContext.random.nextBoolean();
 		};
 		processingContext.magicCombinationMinNumber = CollectionUtils.INSTANCE.retrieveBoolean(config, "combination.magic.enabled", true) ?
-			Integer.valueOf(Optional.ofNullable(config.getProperty("combination.magic.min-number")).orElseGet(() -> "1"))
+			Integer.valueOf(Optional.ofNullable(CollectionUtils.INSTANCE.retrieveValue(config,"combination.magic.min-number")).orElseGet(() -> "1"))
 			:null;
 		processingContext.magicCombinationMaxNumber = CollectionUtils.INSTANCE.retrieveBoolean(config, "combination.magic.enabled", true) ?
-			Integer.valueOf(Optional.ofNullable(config.getProperty("combination.magic.max-number")).orElseGet(() -> "90"))
+			Integer.valueOf(Optional.ofNullable(CollectionUtils.INSTANCE.retrieveValue(config,"combination.magic.max-number")).orElseGet(() -> "90"))
 			:null;
 		processingContext.group = group;
-		processingContext.suffix = config.getProperty("nameSuffix");
+		processingContext.suffix = CollectionUtils.INSTANCE.retrieveValue(config,"nameSuffix");
 		processingContext.notEquilibrateCombinationAtLeastOneNumberAmongThoseChosen = CollectionUtils.INSTANCE.retrieveBoolean(
 			config,
 			"combination.not-equilibrate.at-least-one-number-among-those-chosen",
 			!"sequence".equals(processingContext.comboIndexSelectorType)
 		);
 		processingContext.overwriteIfExists = Integer.parseInt(
-			config.getProperty(
+			CollectionUtils.INSTANCE.retrieveValue(config,
 				"overwrite-if-exists",
 				"1"
 			)
 		);
 		processingContext.waitingSomeoneForGenerationTimeout = Integer.parseInt(
-			config.getProperty(
+			CollectionUtils.INSTANCE.retrieveValue(config,
 				"waiting-someone-for-generation.timeout",
 				"300"
 			)
@@ -219,7 +219,7 @@ public abstract class LotteryMatrixGeneratorAbstEngine {
 			}
 			return storages;
 		};
-		String avoidModeConfigValue = config.getProperty("avoid", "never");
+		String avoidModeConfigValue = CollectionUtils.INSTANCE.retrieveValue(config, "avoid", "never");
 		if (avoidModeConfigValue.equals("never")) {
 			processingContext.avoidMode = 0;
 		} else if (avoidModeConfigValue.equals("if not suggested")) {

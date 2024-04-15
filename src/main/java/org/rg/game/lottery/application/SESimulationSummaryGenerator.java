@@ -45,9 +45,9 @@ public class SESimulationSummaryGenerator extends Shared {
 		try {
 			String simulationSummaryFolder = Arrays.stream(
 				ResourceUtils.INSTANCE.pathsFromSystemEnv(
-						"working-path.simulations.folder"
-					)
-				).findFirst().orElseGet(() -> null);
+					"working-path.simulations.folder"
+				)
+			).findFirst().orElseGet(() -> null);
 			LogUtils.INSTANCE.info("\n\n");
 			String simulationSummaryFile = simulationSummaryFolder + File.separator + "Summary.xlsx";
 			SimpleWorkbookTemplate workBookTemplate = new SimpleWorkbookTemplate(true);

@@ -263,7 +263,7 @@ public class SELotterySimpleSimulator extends Shared {
 		Set<String> groupsToBeProcessed = new TreeSet<>();
 		boolean isFirst = true;
 		for (Properties config : configurationProperties) {
-			String simulationDates = config.getProperty("simulation.dates");
+			String simulationDates = CollectionUtils.INSTANCE.retrieveValue(config, "simulation.dates");
 			if (simulationDates != null) {
 				config.setProperty("competition", simulationDates);
 			}
@@ -273,7 +273,7 @@ public class SELotterySimpleSimulator extends Shared {
 			if (CollectionUtils.INSTANCE.retrieveBoolean(config, "simulation.enabled", false)) {
 				configurations.add(config);
 				groupsToBeProcessed.add(group);
-				configurationFileNames.add(config.getProperty("file.name"));
+				configurationFileNames.add(CollectionUtils.INSTANCE.retrieveValue(config, "file.name"));
 			}
 		}
 		LogUtils.INSTANCE.info(
@@ -287,25 +287,25 @@ public class SELotterySimpleSimulator extends Shared {
 		int maxParallelTasks = Optional.ofNullable(
 			System.getenv("tasks.max-parallel")
 		).map(Integer::valueOf).orElseGet(() -> Math.max((Runtime.getRuntime().availableProcessors() / 2) - 1, 1));
-		for (Properties configuration : configurations) {
+		for (Properties config : configurations) {
 			LogUtils.INSTANCE.info(
-				"Processing file '" + configuration.getProperty("file.name") + "' located in '" + configuration.getProperty("file.parent.absolutePath") + "' in " +
-					(CollectionUtils.INSTANCE.retrieveBoolean(configuration, "simulation.slave") ? "slave" : "master") + " mode"
+				"Processing file '" + CollectionUtils.INSTANCE.retrieveValue(config, "file.name") + "' located in '" + CollectionUtils.INSTANCE.retrieveValue(config, "file.parent.absolutePath") + "' in " +
+					(CollectionUtils.INSTANCE.retrieveBoolean(config, "simulation.slave") ? "slave" : "master") + " mode"
 			);
-			String info = configuration.getProperty("info");
+			String info = CollectionUtils.INSTANCE.retrieveValue(config, "info");
 			if (info != null) {
 				LogUtils.INSTANCE.info(info);
 			}
-			String excelFileName = retrieveExcelFileName(configuration);
-			String configFileName = configuration.getProperty("file.name").replace("." + configuration.getProperty("file.extension"), "");
-			configuration.setProperty(
+			String excelFileName = retrieveExcelFileName(config);
+			String configFileName = CollectionUtils.INSTANCE.retrieveValue(config, "file.name").replace("." + CollectionUtils.INSTANCE.retrieveValue(config, "file.extension"), "");
+			config.setProperty(
 				"nameSuffix",
 				configFileName
 			);
-			Collection<LocalDate> competitionDatesFlat = SELotteryMatrixGeneratorEngine.DEFAULT_INSTANCE.computeExtractionDates(configuration.getProperty("competition"));
-			String redundantConfigValue = configuration.getProperty("simulation.redundancy");
+			Collection<LocalDate> competitionDatesFlat = SELotteryMatrixGeneratorEngine.DEFAULT_INSTANCE.computeExtractionDates(CollectionUtils.INSTANCE.retrieveValue(config, "competition"));
+			String redundantConfigValue = CollectionUtils.INSTANCE.retrieveValue(config, "simulation.redundancy");
 			cleanup(
-				configuration,
+				config,
 				excelFileName,
 				competitionDatesFlat,
 				configFileName,
@@ -316,19 +316,19 @@ public class SELotterySimpleSimulator extends Shared {
 					new ArrayList<>(competitionDatesFlat),
 					redundantConfigValue != null? Integer.valueOf(redundantConfigValue) : 10
 				);
-			configuration.setProperty("report.enabled", "true");
+			config.setProperty("report.enabled", "true");
 			AtomicBoolean firstSetupExecuted = new AtomicBoolean(false);
 			Runnable taskOperation = () -> {
-				LogUtils.INSTANCE.info("Computation of " + configuration.getProperty("file.name") + " started");
-				process(configuration, excelFileName, engineSupplier.get(), competitionDates, firstSetupExecuted);
-				LogUtils.INSTANCE.info("Computation of " + configuration.getProperty("file.name") + " succesfully finished");
+				LogUtils.INSTANCE.info("Computation of " + CollectionUtils.INSTANCE.retrieveValue(config, "file.name") + " started");
+				process(config, excelFileName, engineSupplier.get(), competitionDates, firstSetupExecuted);
+				LogUtils.INSTANCE.info("Computation of " + CollectionUtils.INSTANCE.retrieveValue(config, "file.name") + " succesfully finished");
 			};
-			String asyncFlag = configuration.getProperty("async", "false");
+			String asyncFlag = CollectionUtils.INSTANCE.retrieveValue(config, "async", "false");
 			boolean async = false;
 			if (asyncFlag.equalsIgnoreCase("onSlave")) {
-				async = CollectionUtils.INSTANCE.retrieveBoolean(configuration, "simulation.slave", false);
+				async = CollectionUtils.INSTANCE.retrieveBoolean(config, "simulation.slave", false);
 			} else {
-				async = CollectionUtils.INSTANCE.retrieveBoolean(configuration, "async", false);
+				async = CollectionUtils.INSTANCE.retrieveBoolean(config, "async", false);
 			}
 			if (async) {
 				ConcurrentUtils.INSTANCE.addTask(futures, taskOperation);
@@ -350,8 +350,8 @@ public class SELotterySimpleSimulator extends Shared {
 		}
 	}
 
-	protected static String retrieveExcelFileName(Properties configuration) {
-		String groupName = configuration.getProperty("simulation.group");
+	protected static String retrieveExcelFileName(Properties config) {
+		String groupName = CollectionUtils.INSTANCE.retrieveValue(config, "simulation.group");
 		PersistentStorage.buildWorkingPath(groupName);
 		String reportFileName = (groupName.contains("\\") ?
 			groupName.substring(groupName.lastIndexOf("\\") + 1) :
@@ -362,9 +362,9 @@ public class SELotterySimpleSimulator extends Shared {
 	}
 
 	protected static String setGroup(Properties config) {
-		String simulationGroup = config.getProperty("simulation.group");
+		String simulationGroup = CollectionUtils.INSTANCE.retrieveValue(config, "simulation.group");
 		if (simulationGroup == null) {
-			simulationGroup = config.getProperty("file.name").replace("." + config.getProperty("file.extension"), "");
+			simulationGroup = CollectionUtils.INSTANCE.retrieveValue(config, "file.name").replace("." + CollectionUtils.INSTANCE.retrieveValue(config, "file.extension"), "");
 		}
 		simulationGroup = simulationGroup.replace("${localhost.name}", hostName);
 		config.setProperty("simulation.group", simulationGroup);
@@ -376,8 +376,8 @@ public class SELotterySimpleSimulator extends Shared {
 	}
 
 
-	protected static String retrieveDataBasePath(Properties configuration) {
-		return  PersistentStorage.buildWorkingPath(configuration.getProperty("group"));
+	protected static String retrieveDataBasePath(Properties config) {
+		return  PersistentStorage.buildWorkingPath(CollectionUtils.INSTANCE.retrieveValue(config, "group"));
 	}
 
 	protected static LocalDate removeNextOfLatestExtractionDate(Properties config, Collection<LocalDate> extractionDates) {
@@ -397,20 +397,20 @@ public class SELotterySimpleSimulator extends Shared {
 	}
 
 	protected static void cleanup(
-		Properties configuration,
+		Properties config,
 		String excelFileName,
 		Collection<LocalDate> competitionDates,
 		String configFileName, Integer redundancy
 	) {
-		removeNextOfLatestExtractionDate(configuration, competitionDates);
+		removeNextOfLatestExtractionDate(config, competitionDates);
 		int initialSize = competitionDates.size();
 		if (redundancy != null) {
 			cleanupRedundant(
-				configuration,
+				config,
 				excelFileName, configFileName, redundancy, competitionDates
 			);
 		}
-		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(configuration, "simulation.slave", false);
+		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(config, "simulation.slave", false);
 		readOrCreateExcel(
 			excelFileName,
 			workBook -> {
@@ -440,16 +440,16 @@ public class SELotterySimpleSimulator extends Shared {
 			},
 			isSlave
 		);
-		LogUtils.INSTANCE.info(competitionDates.size() + " dates will be processed, " + (initialSize - competitionDates.size()) + " already processed for file " + configuration.getProperty("file.name"));
+		LogUtils.INSTANCE.info(competitionDates.size() + " dates will be processed, " + (initialSize - competitionDates.size()) + " already processed for file " + CollectionUtils.INSTANCE.retrieveValue(config, "file.name"));
 	}
 
-	private static void cleanupRedundant(Properties configuration, String excelFileName, String configFileName, Integer redundancy, Collection<LocalDate> competitionDatesFlat) {
+	private static void cleanupRedundant(Properties config, String excelFileName, String configFileName, Integer redundancy, Collection<LocalDate> competitionDatesFlat) {
 		List<LocalDate> competionDateLatestBlock =
 			CollectionUtils.INSTANCE.toSubLists(
 				new ArrayList<>(competitionDatesFlat),
 				redundancy
 			).stream().reduce((prev, next) -> next).orElse(null);
-		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(configuration, "simulation.slave", false);
+		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(config, "simulation.slave", false);
 		readOrCreateExcel(
 			excelFileName,
 			workBook -> {
@@ -481,7 +481,7 @@ public class SELotterySimpleSimulator extends Shared {
 						toBeRemoved.add(row);
 					}
 				}
-				LogUtils fileLogger = LogUtils.ToFile.getLogger(configuration.getProperty("logger.file.name"));
+				LogUtils fileLogger = LogUtils.ToFile.getLogger(CollectionUtils.INSTANCE.retrieveValue(config, "logger.file.name"));
 				removeRows(
 					toBeRemoved,
 					rowsForDateComparator,
@@ -532,14 +532,14 @@ public class SELotterySimpleSimulator extends Shared {
 	}
 
 	protected static void process(
-		Properties configuration,
+		Properties config,
 		String excelFileName,
 		SELotteryMatrixGeneratorEngine engine,
 		List<List<LocalDate>> competitionDates,
 		AtomicBoolean firstSetupExecuted
 	) {
-		String redundantConfigValue = configuration.getProperty("simulation.redundancy");
-		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(configuration, "simulation.slave", false);
+		String redundantConfigValue = CollectionUtils.INSTANCE.retrieveValue(config, "simulation.redundancy");
+		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(config, "simulation.slave", false);
 		Function<LocalDate, Function<List<Storage>, Integer>> extractionDatePredicate = null;
 		Function<LocalDate, Consumer<List<Storage>>> systemProcessor = null;
 		AtomicInteger redundantCounter = new AtomicInteger(0);
@@ -557,31 +557,31 @@ public class SELotterySimpleSimulator extends Shared {
 			Collections.shuffle(competitionDates);
 		} else {
 			extractionDatePredicate = buildExtractionDatePredicate(
-				configuration,
+				config,
 				excelFileName,
 				redundantConfigValue != null? Integer.valueOf(redundantConfigValue) : null,
 				redundantCounter
 			);
-			systemProcessor = buildSystemProcessor(configuration, excelFileName);
+			systemProcessor = buildSystemProcessor(config, excelFileName);
 		}
 		//Per cachare il motore in caso di utilizzo dell'opzione prevSys
-		engine.setup(configuration, true);
+		engine.setup(config, true);
 		checkAndNotifyExecutionOfFirstSetupForConfiguration(firstSetupExecuted);
 		for (
 			List<LocalDate> datesToBeProcessed :
 			competitionDates
 		) {
-			configuration.setProperty("competition",
+			config.setProperty("competition",
 				String.join(",",
 					datesToBeProcessed.stream().map(TimeUtils.defaultLocalDateFormat::format).collect(Collectors.toList())
 				)
 			);
-			engine.setup(configuration, false).getExecutor().apply(
+			engine.setup(config, false).getExecutor().apply(
 				extractionDatePredicate
 			).apply(
 				systemProcessor
 			);
-		}		updateHistorical(configuration, excelFileName);
+		}		updateHistorical(config, excelFileName);
 		if (!isSlave) {
 			readOrCreateExcel(
 				excelFileName,
@@ -636,11 +636,11 @@ public class SELotterySimpleSimulator extends Shared {
 			}
 		}
 		//Puliamo file txt duplicati da google drive
-		for (File file : ResourceUtils.INSTANCE.find("(1)", "txt", retrieveDataBasePath(configuration))) {
+		for (File file : ResourceUtils.INSTANCE.find("(1)", "txt", retrieveDataBasePath(config))) {
 			file.delete();
 		}
 		//Puliamo file json duplicati da google drive
-		for (File file : ResourceUtils.INSTANCE.find("(1)", "json", retrieveDataBasePath(configuration))) {
+		for (File file : ResourceUtils.INSTANCE.find("(1)", "json", retrieveDataBasePath(config))) {
 			file.delete();
 		}
 	}
@@ -664,16 +664,16 @@ public class SELotterySimpleSimulator extends Shared {
 	}
 
 	private static Integer updateHistorical(
-		Properties configuration,
+		Properties config,
 		String excelFileName
 	) {
-		String configurationName = configuration.getProperty("nameSuffix");
+		String configurationName = CollectionUtils.INSTANCE.retrieveValue(config, "nameSuffix");
 		Map<String, Map<String, Object>> premiumCountersForFile = new LinkedHashMap<>();
-		List<Number> premiumTypeList = parseReportWinningInfoConfig(configuration.getProperty("report.winning-info", "all").replaceAll("\\s+",""));
+		List<Number> premiumTypeList = parseReportWinningInfoConfig(CollectionUtils.INSTANCE.retrieveValue(config, "report.winning-info", "all").replaceAll("\\s+",""));
 		Number[] premiumTypes = premiumTypeList.toArray(new Number[premiumTypeList.size()]);
-		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(configuration, "simulation.slave", false);
-		SEStats sEStats = getSEStats(configuration);
-		Function<Date, Date> dateOffsetComputer = dateOffsetComputer(configuration);
+		boolean isSlave = CollectionUtils.INSTANCE.retrieveBoolean(config, "simulation.slave", false);
+		SEStats sEStats = getSEStats(config);
+		Function<Date, Date> dateOffsetComputer = dateOffsetComputer(config);
 		AtomicReference<Integer> removedRowResult = new AtomicReference<>();
 		Integer result = readOrCreateExcel(
 			excelFileName,
@@ -721,7 +721,7 @@ public class SELotterySimpleSimulator extends Shared {
 								AtomicReference<PersistentStorage> storageWrapper = new AtomicReference<>();
 								storageWrapper.set(
 									PersistentStorage.restore(
-										configuration.getProperty("group"),
+										CollectionUtils.INSTANCE.retrieveValue(config, "group"),
 										currentRow.getCell(fileColIndex).getStringCellValue()
 									)
 								);
@@ -830,7 +830,7 @@ public class SELotterySimpleSimulator extends Shared {
 					} catch (Throwable exc) {
 						LogUtils.INSTANCE.error("Exception occurred while processing row " + (rowIndex + 1) + " of file " + excelFileName + ": " + exc.getMessage());
 						if (!isSlave) {
-							LogUtils fileLogger = LogUtils.ToFile.getLogger(configuration.getProperty("logger.file.name"));
+							LogUtils fileLogger = LogUtils.ToFile.getLogger(CollectionUtils.INSTANCE.retrieveValue(config, "logger.file.name"));
 							fileLogger.error("Exception occurred while processing row " + (rowIndex + 1) + " of file " + excelFileName + ": " + exc.getMessage());
 							fileLogger.warn("Row " + (rowIndex + 1) + " of file " + excelFileName + " will be removed");
 							LogUtils.INSTANCE.warn("Row " + (rowIndex + 1) + " of file " + excelFileName + " will be removed");
@@ -844,7 +844,7 @@ public class SELotterySimpleSimulator extends Shared {
 					}
 				}
 				if (!isSlave) {
-					LogUtils fileLogger = LogUtils.ToFile.getLogger(configuration.getProperty("logger.file.name"));
+					LogUtils fileLogger = LogUtils.ToFile.getLogger(CollectionUtils.INSTANCE.retrieveValue(config, "logger.file.name"));
 					if (!rowsToBeRemoved.isEmpty()) {
 						removeRows(
 							rowsToBeRemoved,
@@ -916,8 +916,8 @@ public class SELotterySimpleSimulator extends Shared {
 		}
 	}
 
-	private static Function<Date, Date> dateOffsetComputer(Properties configuration) {
-		String offsetRaw = configuration.getProperty("history.validity", "0d");
+	private static Function<Date, Date> dateOffsetComputer(Properties config) {
+		String offsetRaw = CollectionUtils.INSTANCE.retrieveValue(config, "history.validity", "0d");
 		String offsetAsString = offsetRaw.replaceAll("\\s+","").split("d|D|w|W|m|M")[0];
 		Integer offset = Integer.valueOf(offsetAsString);
 		if (offset.compareTo(0) == 0) {
@@ -941,9 +941,9 @@ public class SELotterySimpleSimulator extends Shared {
 				null;
 	}
 
-	protected static SEStats getSEStats(Properties configuration) {
+	protected static SEStats getSEStats(Properties config) {
 		return SEStats.get(
-			configuration.getProperty(
+			CollectionUtils.INSTANCE.retrieveValue(config,
 				"competition.archive.start-date",
 				new SELotteryMatrixGeneratorEngine().getDefaultExtractionArchiveStartDate()
 			), TimeUtils.defaultLocalDateFormat.format(TimeUtils.today())

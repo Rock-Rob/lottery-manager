@@ -61,20 +61,20 @@ public class LotteryMatrixGenerator extends Shared {
 	protected static void process(
 		Collection<CompletableFuture<Void>> futures,
 		Supplier<LotteryMatrixGeneratorAbstEngine> engineSupplier,
-		Properties configuration
+		Properties config
 	) {
 		LogUtils.INSTANCE.info(
-			"Processing file '" + configuration.getProperty("file.name") + "' located in '" + configuration.getProperty("file.parent.absolutePath") + "'"
+			"Processing file '" + CollectionUtils.INSTANCE.retrieveValue(config, "file.name") + "' located in '" + CollectionUtils.INSTANCE.retrieveValue(config, "file.parent.absolutePath") + "'"
 		);
-		String info = configuration.getProperty("info");
+		String info = CollectionUtils.INSTANCE.retrieveValue(config, "info");
 		if (info != null) {
 			LogUtils.INSTANCE.info(info);
 		}
 		LotteryMatrixGeneratorAbstEngine engine = engineSupplier.get();
-		configuration.setProperty("nameSuffix", configuration.getProperty("file.name")
-			.replace("." + configuration.getProperty("file.extension"), ""));
-		ProcessingContext pC = engine.setup(configuration, true);
-		if (CollectionUtils.INSTANCE.retrieveBoolean(configuration, "async", false)) {
+		config.setProperty("nameSuffix", CollectionUtils.INSTANCE.retrieveValue(config, "file.name")
+			.replace("." + CollectionUtils.INSTANCE.retrieveValue(config, "file.extension"), ""));
+		ProcessingContext pC = engine.setup(config, true);
+		if (CollectionUtils.INSTANCE.retrieveBoolean(config, "async", false)) {
 			futures.add(CompletableFuture.runAsync(() -> pC.getExecutor().apply(null).apply(null)));
 		} else {
 			pC.getExecutor().apply(null).apply(null);
