@@ -87,7 +87,7 @@ public class SEStats {
 				Boolean.parseBoolean(System.getenv().getOrDefault("se-stats.loading-from-firebase-enabled", "true")) && FirestoreWrapper.get() != null;
 		CACHE = new LinkedHashMap<>();
 		CACHE_MAX_SIZE = Optional.ofNullable(System.getenv("se-stats.cache.max-size")).map(Integer::parseInt).orElseGet(() -> 100);
-		EXTRACTION_DAYS = Stream.of(System.getenv().getOrDefault("se-stats.extraction-days", "TUESDAY,THURSDAY,SATURDAY")
+		EXTRACTION_DAYS = Stream.of(System.getenv().getOrDefault("se-stats.extraction-days", "TUESDAY,THURSDAY,FRIDAY,SATURDAY")
 			.replaceAll("\\s+","").toUpperCase().split(",")).map(DayOfWeek::valueOf).collect(Collectors.toList());
 	}
 
