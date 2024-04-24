@@ -88,6 +88,7 @@ public class SEIntegralSystemAnalyzer extends Shared {
 		addJSONRecordWriter();
 
 		String[] configurationFileFolders = ResourceUtils.INSTANCE.pathsFromSystemEnv(
+			"integral-system-analysis.folder",
 			"working-path.integral-system-analysis.folder",
 			"resources.integral-system-analysis.folder"
 		);

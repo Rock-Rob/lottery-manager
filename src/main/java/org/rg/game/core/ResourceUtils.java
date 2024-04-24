@@ -220,6 +220,11 @@ public class ResourceUtils {
 					values.add(PersistentStorage.buildWorkingPath(value));
 				} else if (key.startsWith("resources.") || key.startsWith("RESOURCES_")) {
 					values.add(ResourceUtils.INSTANCE.getResource(value).getAbsolutePath());
+				} else {
+					File file = new File(value);
+					if (file.exists()) {
+						values.add(file.getAbsolutePath());
+					}
 				}
 			}
 		}
