@@ -62,14 +62,17 @@ public class FirestoreWrapper {
 						try {
 							DEFAULT_INSTANCE = new FirestoreWrapper(null);
 						} catch (IOException exc) {
+							LogUtils.INSTANCE.error(exc);
 							return Throwables.INSTANCE.throwException(exc);
 						}
 					}
 				}
 			}
 		} catch (NoSuchElementException exc) {
+			LogUtils.INSTANCE.error(exc);
 			LogUtils.INSTANCE.info(exc.getMessage());
 		} catch (Throwable exc) {
+			LogUtils.INSTANCE.error(exc);
 			LogUtils.INSTANCE.error(exc, "Unable to connect to Firebase");
 		}
 		return DEFAULT_INSTANCE;
