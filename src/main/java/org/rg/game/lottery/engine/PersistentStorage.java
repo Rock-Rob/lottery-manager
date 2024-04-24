@@ -21,6 +21,7 @@ import java.util.TreeSet;
 
 import org.burningwave.Synchronizer;
 import org.burningwave.Throwables;
+import org.rg.game.core.CollectionUtils;
 import org.rg.game.core.LogUtils;
 import org.rg.game.core.MathUtils;
 
@@ -105,7 +106,7 @@ public class PersistentStorage implements Storage {
 		if (workingPath == null) {
 			synchronized (PersistentStorage.class) {
 				if (workingPath == null) {
-					String workingPath = System.getenv("lottery-util.working-path");
+					String workingPath = CollectionUtils.INSTANCE.retrieveValue("lottery-util.working-path");
 					workingPath =
 						workingPath != null ? workingPath :
 						System.getProperty("user.home") + File.separator +
