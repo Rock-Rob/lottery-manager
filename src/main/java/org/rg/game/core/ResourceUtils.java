@@ -221,7 +221,7 @@ public class ResourceUtils {
 				} else if (key.startsWith("resources.") || key.startsWith("RESOURCES_")) {
 					values.add(ResourceUtils.INSTANCE.getResource(value).getAbsolutePath());
 				} else {
-					File file = new File(value);
+					File file = Paths.get(value).normalize().toAbsolutePath().toFile();
 					if (file.exists()) {
 						values.add(file.getAbsolutePath());
 					}
